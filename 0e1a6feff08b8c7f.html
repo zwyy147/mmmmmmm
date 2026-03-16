@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=422, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>我的小手机们 ₊˚⊹</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&family=Noto+Serif+SC:wght@300;400&family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ===== 全局 ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background 0.4s;
+}
+
+/* ===== 页面切换 ===== */
+.page { display: none; min-height: 100vh; }
+.page.active { display: block; }
+
+/* ============================================================
+   主页 - 手机导航
+============================================================ */
+#page-home {
+  position: relative;
+  padding-bottom: 90px;
+}
+
+/* 背景层 */
+#home-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  min-width: 100%;
+  min-height: 100%;
+  z-index: 0;
+  background: linear-gradient(135deg, #c8dfc9 0%, #dff0de 40%, #b8d4bb 100%);
+  transition: background 0.3s;
+}
+#home-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 20%, rgba(255,255,255,0.28) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 80%, rgba(140,190,140,0.18) 0%, transparent 70%);
+}
+
+.blob { position: fixed; border-radius: 50%; filter: blur(60px); opacity: 0.18; pointer-events: none; z-index: 0; }
+.blob1 { width: 300px; height: 300px; background: #5d9e62; top: -80px; left: -80px; }
+.blob2 { width: 200px; height: 200px; background: #a3c9a8; bottom: 100px; right: -60px; }
+.blob3 { width: 150px; height: 150px; background: #7ab87f; top: 50%; left: 60%; }
+
+/* 内容层 */
+.home-content { position: relative; z-index: 1; }
+
+header.home-header {
+  text-align: center;
+  padding: 48px 20px 24px;
+}
+
+
+h1.home-title {
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 300;
+  font-size: 1.5rem;
+  color: #4e7554;
+  letter-spacing: 0.08em;
+}
+.home-subtitle { margin-top: 4px; font-size: 0.78rem; color: #7a9e7e; letter-spacing: 0.15em; }
+
+.search-wrap-home {
+  position: relative;
+  max-width: 380px;
+  margin: 0 auto 28px;
+  padding: 0 20px;
+}
+.search-input-home {
+  width: 100%;
+  padding: 10px 18px;
+  border-radius: 50px;
+  border: 1.5px solid rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(12px);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  color: #4e7554;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.search-input-home::placeholder { color: #a8c5ac; }
+.search-input-home:focus { border-color: #a8c5ac; box-shadow: 0 0 0 3px rgba(168,197,172,0.25); }
+
+/* 卡片网格 */
+.grid-home {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  padding: 0 16px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.phone-card {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(255,255,255,0.7);
+  border-radius: 20px;
+  padding: 16px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 4px 24px rgba(90,130,95,0.13);
+  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+  animation: cardIn 0.4s ease both;
+}
+.phone-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+  border-radius: 20px 20px 0 0;
+  pointer-events: none;
+}
+@keyframes cardIn { from{opacity:0;transform:translateY(16px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+.phone-card:active { transform: scale(0.94); }
+
+.card-icon-home {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #d4e8d6, #eaf3eb);
+  border: 1.5px solid rgba(255,255,255,0.8);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 2px 8px rgba(100,150,100,0.15);
+}
+.card-name-home {
+  font-size: 0.72rem;
+  color: #4e7554;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.3;
+  word-break: break-all;
+}
+
+.delete-btn-home {
+  position: absolute; top: 5px; right: 5px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: rgba(180,80,80,0.18);
+  border: none; color: #c05050;
+  font-size: 0.75rem; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  z-index: 2;
+}
+body.edit-mode .delete-btn-home { display: flex; }
+body.edit-mode .phone-card { animation: wiggle 0.5s ease infinite alternate; }
+@keyframes wiggle { from{transform:rotate(-1deg)} to{transform:rotate(1deg)} }
+
+.home-empty {
+  grid-column: 1/-1; text-align: center;
+  padding: 40px 0; color: #7a9e7e; font-size: 0.85rem;
+}
+
+/* 底部FAB */
+.fab-area {
+  position: fixed; bottom: 24px; left: 0; right: 0;
+  z-index: 10; display: flex; justify-content: center; gap: 10px;
+  flex-wrap: wrap; padding: 0 16px;
+}
+.fab {
+  padding: 11px 18px; border-radius: 50px; border: none;
+  font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 700;
+  cursor: pointer; box-shadow: 0 4px 20px rgba(90,140,95,0.25);
+  transition: transform 0.15s; display: flex; align-items: center; gap: 5px;
+  white-space: nowrap;
+}
+.fab:active { transform: scale(0.95); }
+.fab-add { background: linear-gradient(135deg, #7a9e7e, #4e7554); color: white; }
+.fab-edit {
+  background: rgba(255,255,255,0.55); backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(255,255,255,0.7); color: #4e7554;
+}
+body.edit-mode .fab-edit { background: rgba(255,200,200,0.5); border-color: rgba(200,100,100,0.3); color: #b05050; }
+.fab-bg {
+  background: rgba(255,255,255,0.55); backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(255,255,255,0.7); color: #4e7554;
+}
+.fab-api {
+  background: rgba(0,200,107,0.15); backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(0,200,107,0.3); color: #007a3d;
+}
+
+/* 添加手机弹窗 */
+.modal-overlay-home {
+  display: none; position: fixed; inset: 0;
+  background: rgba(80,120,85,0.25); backdrop-filter: blur(6px);
+  z-index: 20; align-items: flex-end; justify-content: center;
+}
+.modal-overlay-home.open { display: flex; }
+.modal-home {
+  background: linear-gradient(160deg, #f0f8f0, #e2f0e3);
+  border-radius: 28px 28px 0 0;
+  padding: 28px 24px 40px;
+  width: 100%; max-width: 480px;
+  box-shadow: 0 -8px 40px rgba(80,130,85,0.18);
+  animation: slideUp 0.3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+
+.modal-home h2 {
+  font-family: 'Noto Serif SC', serif; font-weight: 400;
+  font-size: 1.1rem; color: #4e7554; margin-bottom: 20px; text-align: center;
+}
+.field-home { margin-bottom: 14px; }
+.field-home label { display: block; font-size: 0.75rem; color: #7a9e7e; font-weight: 600; margin-bottom: 5px; }
+.field-home input {
+  width: 100%; padding: 11px 16px; border-radius: 14px;
+  border: 1.5px solid rgba(168,197,172,0.5);
+  background: rgba(255,255,255,0.7);
+  font-family: 'Nunito', sans-serif; font-size: 0.9rem; color: #4e7554; outline: none;
+  transition: border 0.2s;
+}
+.field-home input:focus { border-color: #a8c5ac; background: rgba(255,255,255,0.9); }
+
+.emoji-grid-home { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.emoji-btn-home {
+  width: 36px; height: 36px; border-radius: 10px;
+  border: 1.5px solid transparent; background: rgba(255,255,255,0.6);
+  font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: border 0.15s, transform 0.15s;
+}
+.emoji-btn-home:active { transform: scale(0.9); }
+.emoji-btn-home.selected { border-color: #7a9e7e; background: #eaf3eb; }
+
+.modal-btns-home { display: flex; gap: 10px; margin-top: 20px; }
+.btn-cancel-home {
+  flex: 1; padding: 12px; border-radius: 14px;
+  border: 1.5px solid rgba(168,197,172,0.5); background: transparent;
+  font-family: 'Nunito', sans-serif; font-size: 0.9rem; color: #7a9e7e; cursor: pointer;
+}
+.btn-save-home {
+  flex: 2; padding: 12px; border-radius: 14px; border: none;
+  background: linear-gradient(135deg, #7a9e7e, #4e7554);
+  font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 700;
+  color: white; cursor: pointer; box-shadow: 0 3px 12px rgba(90,140,95,0.3);
+}
+
+
+/* ============================================================
+   API Vault 页面
+============================================================ */
+#page-api {
+  font-family: 'DM Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  transition: all 0.4s ease;
+}
+
+:root {
+  --g1: #00ff87; --g2: #00c96b; --g3: #00a855; --g4: #007a3d; --g5: #004d26;
+  --bg: #050f09; --bg2: #0a1f12; --bg3: #0f2d1a;
+  --card: #0d2416; --card2: #112b1c;
+  --border: #1a3d28; --border2: #00ff8730;
+  --text: #e8f5ee; --text2: #7aad8f; --text3: #3d6b50;
+  --danger: #ff4d6d; --warn: #ffb347;
+  --shadow: 0 8px 32px #00000066; --glow: 0 0 20px #00ff8720;
+}
+[data-theme="light"] {
+  --bg: #f0faf4; --bg2: #e2f5ea; --bg3: #d0edda;
+  --card: #ffffff; --card2: #f5fdf8;
+  --border: #b8dfc6; --border2: #00a85540;
+  --text: #0d2416; --text2: #2d6b47; --text3: #7ab894;
+  --shadow: 0 8px 32px #00000016; --glow: 0 0 20px #00a85518;
+}
+
+#page-api::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    radial-gradient(ellipse at 20% 20%, #00ff8709 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, #00c96b06 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+}
+
+.api-app { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 24px 20px 60px; }
+
+.api-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid var(--border);
+  flex-wrap: wrap; gap: 12px;
+}
+.api-logo { display: flex; align-items: center; gap: 12px; }
+.api-logo-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--g1), var(--g3));
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; box-shadow: var(--glow);
+}
+.api-logo h1 {
+  font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;
+  background: linear-gradient(90deg, var(--g1), var(--g2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.api-logo span { font-size: 11px; color: var(--text3); display: block; font-weight: 300; margin-top: -2px; }
+
+.api-header-actions { display: flex; gap: 10px; align-items: center; }
+
+.btn-back {
+  background: var(--card); border: 1px solid var(--border); color: var(--text2);
+  padding: 0 14px; height: 38px; border-radius: 10px; cursor: pointer;
+  font-family: 'DM Mono', monospace; font-size: 13px;
+  display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+}
+.btn-back:hover { border-color: var(--g3); color: var(--g1); }
+
+.btn-theme-api {
+  background: var(--card); border: 1px solid var(--border); color: var(--text2);
+  width: 38px; height: 38px; border-radius: 10px; cursor: pointer;
+  font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.btn-theme-api:hover { border-color: var(--g3); color: var(--g1); box-shadow: var(--glow); }
+
+.btn-primary-api {
+  background: linear-gradient(135deg, var(--g2), var(--g4));
+  border: none; color: #fff; padding: 0 18px; height: 38px; border-radius: 10px;
+  cursor: pointer; font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap;
+}
+.btn-primary-api:hover { transform: translateY(-1px); box-shadow: 0 4px 20px #00c96b40; }
+
+.api-toolbar { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; }
+.api-search-wrap { flex: 1; min-width: 200px; position: relative; }
+.api-search-wrap input {
+  width: 100%; background: var(--card); border: 1px solid var(--border);
+  color: var(--text); padding: 10px 12px 10px 36px; border-radius: 10px;
+  font-family: 'DM Mono', monospace; font-size: 13px; outline: none; transition: all 0.2s;
+}
+.api-search-wrap input:focus { border-color: var(--g3); box-shadow: 0 0 0 3px var(--border2); }
+.api-search-wrap::before {
+  content: '⌕'; position: absolute; left: 12px; top: 50%;
+  transform: translateY(-50%); color: var(--text3); font-size: 16px;
+}
+.filter-select {
+  background: var(--card); border: 1px solid var(--border); color: var(--text2);
+  padding: 10px 12px; border-radius: 10px; font-family: 'DM Mono', monospace;
+  font-size: 13px; outline: none; cursor: pointer; transition: all 0.2s; min-width: 120px;
+}
+.filter-select:focus { border-color: var(--g3); }
+
+.group-section { margin-bottom: 32px; }
+.group-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; cursor: pointer; user-select: none; }
+.group-label { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--g2); }
+.group-line { flex: 1; height: 1px; background: var(--border); }
+.group-count { font-size: 11px; color: var(--text3); background: var(--bg3); padding: 2px 8px; border-radius: 20px; }
+.group-toggle { font-size: 12px; color: var(--text3); transition: transform 0.2s; }
+.group-section.collapsed .group-toggle { transform: rotate(-90deg); }
+.group-section.collapsed .group-cards { display: none; }
+.group-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+.api-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px; transition: all 0.2s;
+  position: relative; overflow: hidden; animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.api-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--g3), transparent); opacity: 0; transition: opacity 0.2s;
+}
+.api-card:hover { border-color: var(--border2); box-shadow: var(--shadow); transform: translateY(-2px); }
+.api-card:hover::before { opacity: 1; }
+
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+.card-name { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); word-break: break-word; }
+.card-actions { display: flex; gap: 4px; flex-shrink: 0; margin-left: 8px; }
+.btn-icon {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text3);
+  width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+}
+.btn-icon:hover { color: var(--g1); border-color: var(--g3); background: var(--bg2); }
+.btn-icon.danger:hover { color: var(--danger); border-color: var(--danger); }
+
+.card-field { margin-bottom: 10px; }
+.card-field:last-child { margin-bottom: 0; }
+.field-label { font-size: 10px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; }
+.field-value {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 10px; font-size: 12px; color: var(--text2);
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; word-break: break-all;
+}
+.field-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.field-text.masked { letter-spacing: 2px; color: var(--text3); }
+.btn-copy {
+  background: none; border: none; color: var(--text3); cursor: pointer;
+  font-size: 12px; padding: 2px 4px; border-radius: 4px; transition: all 0.15s; flex-shrink: 0;
+}
+.btn-copy:hover { color: var(--g1); }
+.btn-copy.copied { color: var(--g1); }
+.model-tag {
+  display: inline-block; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--g2); font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 500;
+}
+
+.api-empty-state { text-align: center; padding: 60px 20px; color: var(--text3); display: none; }
+.api-empty-state.show { display: block; }
+.api-empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+.api-empty-state p { font-size: 14px; line-height: 1.8; }
+
+/* API 弹窗 */
+.api-modal-overlay {
+  position: fixed; inset: 0; background: #00000088; backdrop-filter: blur(8px);
+  z-index: 100; display: none; align-items: center; justify-content: center;
+  padding: 20px; animation: overlayIn 0.2s ease;
+}
+.api-modal-overlay.open { display: flex; }
+@keyframes overlayIn { from{opacity:0} to{opacity:1} }
+.api-modal {
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 18px; padding: 28px; width: 100%; max-width: 480px;
+  box-shadow: var(--shadow), var(--glow); animation: modalIn 0.25s ease;
+  max-height: 90vh; overflow-y: auto;
+}
+@keyframes modalIn { from{opacity:0;transform:scale(0.96) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
+
+.api-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.api-modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--text); }
+.btn-close {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text3);
+  width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+}
+.btn-close:hover { color: var(--danger); border-color: var(--danger); }
+
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 11px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+.form-label span { color: var(--danger); margin-left: 2px; }
+.form-input, .form-select {
+  width: 100%; background: var(--bg2); border: 1px solid var(--border); color: var(--text);
+  padding: 10px 12px; border-radius: 10px; font-family: 'DM Mono', monospace;
+  font-size: 13px; outline: none; transition: all 0.2s;
+}
+.form-input:focus, .form-select:focus { border-color: var(--g3); box-shadow: 0 0 0 3px var(--border2); }
+.form-input::placeholder, input::placeholder { color: var(--text3); }
+.form-select option { background: var(--card); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.new-group-input { display: none; margin-top: 8px; }
+.new-group-input.show { display: block; }
+.api-modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+.btn-secondary {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text2);
+  padding: 0 18px; height: 38px; border-radius: 10px; cursor: pointer;
+  font-family: 'DM Mono', monospace; font-size: 13px; transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: var(--g3); color: var(--g1); }
+
+/* Toast */
+.toast-wrap { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast {
+  background: var(--card); border: 1px solid var(--border2); color: var(--text);
+  padding: 12px 18px; border-radius: 12px; font-size: 13px; box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 8px; animation: toastIn 0.3s ease; min-width: 200px;
+}
+@keyframes toastIn { from{opacity:0;transform:translateY(8px) scale(0.96)} to{opacity:1;transform:translateY(0) scale(1)} }
+.toast.fadeout { animation: toastOut 0.3s ease forwards; }
+@keyframes toastOut { to{opacity:0;transform:translateY(4px)} }
+
+/* 统计栏 */
+.stats-bar { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+.stat-item {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 16px; display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--text2);
+}
+.stat-num { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--g1); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--g4); }
+
+@media (max-width: 500px) {
+  .form-row { grid-template-columns: 1fr; }
+  .group-cards { grid-template-columns: 1fr; }
+  .api-header { flex-wrap: wrap; gap: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 主页 ===== -->
+<div id="page-home" class="page active">
+  <div id="home-bg"></div>
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+  <div class="home-content">
+    <header class="home-header">
+          <h1 class="home-title">我的小手机们</h1>
+      <p class="home-subtitle">₊˚ · tap to visit · ˚₊</p>
+    </header>
+    <div class="search-wrap-home">
+      <input class="search-input-home" type="text" placeholder="🔍  搜索…" id="homeSearch" oninput="renderPhoneCards()">
+    </div>
+    <div class="grid-home" id="phoneGrid"></div>
+  </div>
+
+  <!-- FAB -->
+  <div class="fab-area">
+    <button class="fab fab-edit" id="editBtn">✏️ 整理</button>
+    <button class="fab fab-add" id="btnAdd">＋ 添加</button>
+    <button class="fab fab-api" id="btnApi">🔐 API</button>
+    <button class="fab fab-api" id="btnResource" style="background:rgba(106,147,176,0.15);border-color:rgba(106,147,176,0.3);color:#3a5a7a;">📦 资源</button>
+  </div>
+
+</div>
+
+<!-- ===== API Vault 页 ===== -->
+<div id="page-api" class="page">
+  <div class="api-app">
+    <header class="api-header">
+      <div class="api-logo">
+        <div class="api-logo-icon">🔐</div>
+        <div>
+          <h1>API Vault</h1>
+          <span>本地密钥管理器</span>
+        </div>
+      </div>
+      <div class="api-header-actions">
+        <button class="btn-back" data-back="home">← 返回</button>
+        <button class="btn-theme-api" id="apiThemeBtn" title="切换主题">☀️</button>
+        <button class="btn-primary-api" onclick="openApiModal()">＋ 添加 API</button>
+      </div>
+    </header>
+
+    <div class="stats-bar" id="apiStatsBar"></div>
+
+    <div class="api-toolbar">
+      <div class="api-search-wrap">
+        <input type="text" id="apiSearchInput" placeholder="搜索名称、模型、地址…" oninput="renderApiAll()">
+      </div>
+      <select class="filter-select" id="apiGroupFilter" onchange="renderApiAll()">
+        <option value="">全部分组</option>
+      </select>
+    </div>
+
+    <div id="apiMainContent"></div>
+    <div class="api-empty-state" id="apiEmptyState">
+      <div class="icon">🌿</div>
+      <p>还没有 API 哦～<br>点右上角「添加 API」开始吧！</p>
+    </div>
+  </div>
+
+  <!-- API 弹窗 -->
+  <div class="api-modal-overlay" id="apiModalOverlayEl">
+    <div class="api-modal">
+      <div class="api-modal-header">
+        <div class="api-modal-title" id="apiModalTitle">添加 API</div>
+        <button class="btn-close" onclick="closeApiModal()">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">名称 <span>*</span></label>
+        <input class="form-input" id="f-name" placeholder="例：OpenAI GPT-4" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">API 地址 <span>*</span></label>
+        <input class="form-input" id="f-url" placeholder="https://api.openai.com/v1" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">密钥 <span>*</span></label>
+        <input class="form-input" id="f-key" placeholder="sk-…" type="password" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">模型</label>
+          <input class="form-input" id="f-model" placeholder="gpt-4o" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">分组 <span>*</span></label>
+          <select class="form-select" id="f-group" onchange="handleApiGroupChange()">
+            <option value="__new__">＋ 新建分组</option>
+          </select>
+          <input class="form-input new-group-input" id="f-newgroup" placeholder="输入分组名" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">备注</label>
+        <input class="form-input" id="f-note" placeholder="可选备注" />
+      </div>
+      <div class="api-modal-footer">
+        <button class="btn-secondary" onclick="closeApiModal()">取消</button>
+        <button class="btn-primary-api" onclick="saveApiEntry()">💾 保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== 资源工具页 ===== -->
+<div id="page-resource" class="page">
+  <div style="position:relative;width:100%;height:100vh;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(200,220,200,0.4);flex-shrink:0;z-index:5;">
+      <button data-back="home" style="padding:7px 14px;border-radius:20px;border:1.5px solid rgba(168,197,172,0.5);background:transparent;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:700;color:#4e7554;cursor:pointer;">← 返回</button>
+      <span style="font-family:'Noto Serif SC',serif;font-size:0.95rem;color:#4e7554;font-weight:400;">SillyTavern 资源工具</span>
+    </div>
+    <iframe id="resourceFrame" style="flex:1;width:100%;border:none;" ></iframe>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- 添加手机弹窗 -->
+<div class="modal-overlay-home" id="homeModalOverlayEl">
+  <div class="modal-home">
+    <h2>添加小手机 🌿</h2>
+    <div class="field-home">
+      <label>名称</label>
+      <input type="text" id="phoneName" placeholder="名称">
+    </div>
+    <div class="field-home">
+      <label>网址</label>
+      <input type="url" id="phoneUrl" placeholder="https://...">
+    </div>
+    <div class="field-home">
+      <label>图标</label>
+      <div class="emoji-grid-home" id="emojiGridHome"></div>
+    </div>
+    <div class="modal-btns-home">
+      <button class="btn-cancel-home" onclick="closeHomeModal()">取消</button>
+      <button class="btn-save-home" onclick="savePhone()">保存 ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 工具
+// ============================================================
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) { return String(s||'').replace(/'/g,"\\'"); }
+
+function toast(msg) {
+  const wrap = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(() => { t.classList.add('fadeout'); setTimeout(() => t.remove(), 300); }, 2000);
+}
+
+// ============================================================
+// 页面切换
+// ============================================================
+const ST_HTML = "<!DOCTYPE html>\n<html lang=\"zh-CN\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\">\n    <title>SillyTavern \u5361\u7247\u6574\u7406\u5de5\u5177<\/title>\n    <meta name=\"theme-color\" content=\"#6a93b0\">\n    <meta name=\"mobile-web-app-capable\" content=\"yes\">\n    <meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n    <meta name=\"apple-mobile-web-app-title\" content=\"\u89d2\u8272\u5361\u7247\">\n    <meta name=\"application-name\" content=\"\u89d2\u8272\u5361\u7247\u6574\u7406\u5de5\u5177\">\n    <style>\n        /* --- \u6781\u7b80\u4f4e\u9971\u548c\u8c03\u8272\u677f & \u73bb\u7483\u62df\u7269\u5316\u53d8\u91cf --- */\n        :root {\n            --bg-color: #eaf0f6; --text-main: #3a4350; --text-muted: #7b8898;\n            --glass-bg: rgba(255, 255, 255, 0.65); --glass-border: rgba(255, 255, 255, 0.5);\n            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);\n            --accent-blue: #6a93b0; --accent-red: #c97a7e;\n            --radius-panel: 16px; --radius-btn: 10px;\n        }\n\n        body.dark-mode {\n            --bg-color: #1a1d24; --text-main: #e2e8f0; --text-muted: #94a3b8;\n            --glass-bg: rgba(30, 34, 43, 0.65); --glass-border: rgba(255, 255, 255, 0.08);\n            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);\n            --accent-blue: #557b9d; --accent-red: #b06569;\n        }\n\n        /* --- \u57fa\u7840\u4e0e\u80cc\u666f\u5149\u6655\u7279\u6548 --- */\n        body { \n            font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; \n            margin: 0; padding: 20px 15px; \n            background-color: var(--bg-color); color: var(--text-main); \n            transition: background-color 0.4s ease; min-height: 100vh; overflow-x: hidden;\n        }\n        body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; filter: blur(80px); opacity: 0.6; }\n        body::before { top: -10%; left: -10%; width: 300px; height: 300px; background: #cce0ff; }\n        body::after { bottom: -10%; right: -10%; width: 250px; height: 250px; background: #e8d5ec; }\n        body.dark-mode::before { background: #1f2c41; }\n        body.dark-mode::after { background: #2d1b33; }\n\n        /* \u2605 \u4e3b Tab \u5207\u6362\u6837\u5f0f \u2605 */\n        .main-tabs {\n            display: flex; gap: 0; margin-bottom: 16px;\n            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);\n            border: 1px solid var(--glass-border); border-radius: var(--radius-panel);\n            padding: 5px; box-shadow: var(--glass-shadow);\n        }\n        .main-tab {\n            flex: 1; padding: 10px 0; border: none; background: transparent;\n            color: var(--text-muted); font-size: 15px; font-weight: 500;\n            border-radius: calc(var(--radius-panel) - 4px); cursor: pointer;\n            transition: all 0.2s ease;\n        }\n        .main-tab:hover { color: var(--text-main); background: rgba(0,0,0,0.04); }\n        body.dark-mode .main-tab:hover { background: rgba(255,255,255,0.06); }\n        .main-tab.active {\n            background: var(--accent-blue); color: white;\n            box-shadow: 0 2px 10px rgba(106,147,176,0.3);\n        }\n\n        /* HTML\u5361\u7247\u6837\u5f0f\u590d\u7528card\uff0c\u8865\u4e00\u4e2a\u5220\u9664\u6309\u94ae */\n        .html-card-del {\n            position: absolute; top: 6px; right: 6px;\n            background: rgba(201,122,126,0.15); border: none; border-radius: 6px;\n            color: var(--accent-red); cursor: pointer; padding: 3px 6px; font-size: 12px;\n            opacity: 0; transition: opacity 0.2s;\n        }\n        .card:hover .html-card-del { opacity: 1; }\n\n        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }\n        \n        /* --- \u6309\u94ae\u6837\u5f0f\u91cd\u6784 --- */\n        .btn { \n            display: inline-flex; justify-content: center; align-items: center; gap: 6px;\n            padding: 10px 14px; cursor: pointer; border: 1px solid var(--glass-border); \n            border-radius: var(--radius-btn); background: var(--accent-blue); color: white; \n            font-size: 14px; font-weight: 500; transition: all 0.2s ease;\n            box-shadow: 0 2px 10px rgba(0,0,0,0.05); white-space: nowrap;\n        }\n        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }\n        .btn:active { transform: translateY(1px); }\n        .btn-secondary { background: var(--glass-bg); color: var(--text-main); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }\n        .btn-secondary:hover { background: rgba(255,255,255,0.8); }\n        body.dark-mode .btn-secondary:hover { background: rgba(60, 65, 80, 0.8); }\n        .btn-danger { background: var(--accent-red); color: white; }\n        \n        .file-input { display: none; }\n        select { \n            padding: 10px 14px; border-radius: var(--radius-btn); border: 1px solid var(--glass-border); \n            background: var(--glass-bg); color: var(--text-main); font-size: 15px; font-weight: 500; \n            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); appearance: none; cursor: pointer;\n        }\n\n        svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }\n\n        /* --- \u6db2\u6001\u73bb\u7483\u63a7\u5236\u9762\u677f\u533a --- */\n        .controls-panel { \n            background: var(--glass-bg); backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%);\n            padding: 18px; border-radius: var(--radius-panel); border: 1px solid var(--glass-border);\n            box-shadow: var(--glass-shadow); margin-bottom: 20px; display: flex; flex-direction: column; gap: 14px; position: relative;\n        }\n        .row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }\n        .action-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }\n        hr { width: 100%; border: 0; border-top: 1px solid var(--glass-border); margin: 2px 0; }\n\n        /* \u53f3\u4e0a\u89d2\u516c\u544a\u6309\u94ae */\n        .top-right-notice-btn {\n            position: absolute; top: 18px; right: 18px; background: transparent; border: none; \n            color: var(--accent-blue); cursor: pointer; padding: 4px; border-radius: 50%; transition: 0.2s;\n        }\n        .top-right-notice-btn:hover { background: rgba(0,0,0,0.05); transform: scale(1.1); }\n        body.dark-mode .top-right-notice-btn:hover { background: rgba(255,255,255,0.1); }\n\n        /* --- \u5361\u7247\u5bb9\u5668 --- */\n        #card-container { display: flex; gap: 14px; transition: all 0.3s ease; }\n        .card { \n            background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);\n            border: 1px solid var(--glass-border); border-radius: var(--radius-panel); \n            box-shadow: var(--glass-shadow); cursor: pointer; position: relative; transition: all 0.2s ease; \n        }\n        .card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(31,38,135,0.1); }\n        .card:active { transform: scale(0.97); }\n        .card-checkbox { position: absolute; top: 8px; left: 8px; width: 22px; height: 22px; cursor: pointer; z-index: 10; accent-color: var(--accent-blue); }\n        \n        .text-avatar { display: flex; justify-content: center; align-items: center; font-weight: bold; overflow: hidden; background: rgba(255,255,255,0.72); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.9); box-shadow: 0 4px 16px rgba(31,38,135,0.06); }\n        .image-avatar { object-fit: cover; } \n\n        /* 3 \u5217\u7f51\u683c\u89c6\u56fe */\n        #card-container.grid-view, #lore-container.grid-view { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }\n        #card-container.grid-view .card, #lore-container.grid-view .card { padding: 10px; text-align: center; display: flex; flex-direction: column; align-items: center; overflow: hidden; }\n        #card-container.grid-view .folder-card, #lore-container.grid-view .folder-card { }\n        #card-container.grid-view .text-avatar, #card-container.grid-view .image-avatar,\n        #lore-container.grid-view .text-avatar, #lore-container.grid-view .image-avatar { width: 100%; aspect-ratio: 1/1; border-radius: 10px; font-size: 32px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }\n        .card-name { margin: 10px 0 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; font-size: 13px; font-weight: 500; color: var(--text-main); }\n\n        /* \u5217\u8868\u89c6\u56fe */\n        #card-container.list-view, #lore-container.list-view { flex-direction: column; display: flex; }\n        #card-container.list-view .card, #lore-container.list-view .card { display: flex; align-items: center; padding: 12px; gap: 16px; }\n        #card-container.list-view .card-checkbox, #lore-container.list-view .card-checkbox { position: static; margin-left: 5px; }\n        #card-container.list-view .text-avatar, #card-container.list-view .image-avatar,\n        #lore-container.list-view .text-avatar, #lore-container.list-view .image-avatar { width: 52px; height: 52px; border-radius: 50%; font-size: 20px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }\n        #card-container.list-view .card-info, #lore-container.list-view .card-info { text-align: left; flex-grow: 1; overflow: hidden; }\n        #card-container.list-view .card-name, #lore-container.list-view .card-name { margin: 0; font-size: 16px; }\n\n        /* --- \u5f39\u7a97\u4e0eToast\u7edf\u4e00\u6837\u5f0f --- */\n        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 100; padding: 20px; }\n        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }\n        .modal-content { \n            background: var(--glass-bg); backdrop-filter: blur(25px) saturate(200%); -webkit-backdrop-filter: blur(25px) saturate(200%);\n            border: 1px solid var(--glass-border); color: var(--text-main); border-radius: 20px; \n            width: 100%; max-width: 450px; max-height: 80vh; box-shadow: 0 24px 48px rgba(0,0,0,0.2); \n            display: flex; flex-direction: column; overflow: hidden;\n        }\n\n        .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }\n        .modal-header h2, .modal-header h3 { margin: 0; font-size: 18px; font-weight: 600; }\n        .modal-body-scroll { padding: 24px; overflow-y: auto; flex: 1; line-height: 1.6; color: var(--text-muted); }\n        .close-btn { cursor: pointer; color: var(--text-muted); transition: 0.2s; padding: 4px; border-radius: 50%; background: transparent; border: none; }\n        .close-btn:hover { color: var(--accent-red); background: rgba(0,0,0,0.05); }\n        .modal-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--glass-border); border-radius: var(--radius-btn); background: var(--bg-color); color: var(--text-main); }\n        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; padding: 18px 24px; border-top: 1px solid var(--glass-border); background: rgba(0,0,0,0.02); }\n\n        /* \u516c\u544a\u680f\u4e13\u5c5e\u6837\u5f0f */\n        #notice-modal .modal-content { width: 90vw; max-width: 90vw; height: 80vh; max-height: 80vh; background: rgba(255, 255, 255, 0.85); }\n        body.dark-mode #notice-modal .modal-content { background: rgba(30, 34, 43, 0.85); }\n        .notice-important { padding: 15px; background: rgba(201, 122, 126, 0.15); border-left: 4px solid var(--accent-red); border-radius: 4px; color: var(--accent-red); font-weight: bold; margin-bottom: 20px;}\n\n        /* \u89d2\u8272\u8be6\u60c5\u5f39\u7a97 body \u6587\u5b57\u989c\u8272\u4fee\u6b63 */\n        #modal-body { color: var(--text-main); }\n\n        /* \u52a0\u8f7d\u52a8\u753b */\n        .spinner { border: 3px solid var(--glass-border); border-top: 3px solid var(--accent-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }\n        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }\n        #loading-modal .modal-content { background: transparent; box-shadow: none; border: none; backdrop-filter: none; text-align: center; color: white; justify-content: center; }\n\n        /* \u2605 Toast \u60ac\u6d6e\u63d0\u793a\u7cfb\u7edf \u2605 */\n        .toast {\n            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);\n            background: rgba(30, 34, 43, 0.9); color: white; padding: 12px 24px;\n            border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);\n            z-index: 9999; font-size: 14px; font-weight: 500;\n            opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);\n            pointer-events: none; white-space: nowrap; backdrop-filter: blur(10px);\n        }\n        .toast.show { opacity: 1; top: 40px; }\n        .toast.error { background: rgba(201, 122, 126, 0.95); }\n\n        /* --- \u9762\u5305\u5c51\u5bfc\u822a --- */\n        .breadcrumb {\n            display: flex; align-items: center; flex-wrap: wrap; gap: 4px;\n            padding: 8px 12px; background: rgba(0,0,0,0.03); border-radius: var(--radius-btn);\n            min-height: 38px;\n        }\n        .breadcrumb-item {\n            display: inline-flex; align-items: center; gap: 4px;\n            font-size: 13px; color: var(--text-muted); cursor: pointer;\n            padding: 3px 6px; border-radius: 6px; transition: 0.15s;\n            border: none; background: transparent;\n        }\n        .breadcrumb-item:hover { background: rgba(106,147,176,0.15); color: var(--accent-blue); }\n        .breadcrumb-item.active { color: var(--text-main); font-weight: 600; cursor: default; }\n        .breadcrumb-item.active:hover { background: transparent; color: var(--text-main); }\n        .breadcrumb-sep { color: var(--text-muted); font-size: 12px; opacity: 0.5; user-select: none; }\n\n        /* --- \u6587\u4ef6\u5939\u5361\u7247 --- */\n        .folder-card {\n            background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);\n            border: 1px solid var(--glass-border); border-radius: var(--radius-panel);\n            box-shadow: var(--glass-shadow); cursor: pointer; position: relative;\n            transition: all 0.2s ease; padding: 10px; text-align: center;\n            display: flex; flex-direction: column; align-items: center; overflow: hidden;\n        }\n        .folder-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(31,38,135,0.1); }\n        .folder-card:active { transform: scale(0.97); }\n        .folder-icon {\n            width: 100%; aspect-ratio: 1/1; border-radius: 10px;\n            display: flex; justify-content: center; align-items: center;\n            font-size: 36px; background: rgba(106,147,176,0.12);\n        }\n        .folder-card .card-name { margin: 10px 0 0 0; font-size: 13px; font-weight: 500; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }\n        .folder-card-del {\n            position: absolute; top: 6px; right: 6px;\n            background: rgba(201,122,126,0.15); border: none; border-radius: 6px;\n            color: var(--accent-red); cursor: pointer; padding: 3px 6px; font-size: 12px;\n            opacity: 0; transition: opacity 0.2s;\n        }\n        .folder-card:hover .folder-card-del { opacity: 1; }\n\n        /* \u5217\u8868\u89c6\u56fe\u91cc\u6587\u4ef6\u5939\u6837\u5f0f */\n        #card-container.list-view .folder-card {\n            flex-direction: row; padding: 12px; gap: 16px; text-align: left;\n        }\n        #card-container.list-view .folder-icon {\n            width: 52px; height: 52px; aspect-ratio: unset; border-radius: 50%;\n            font-size: 22px; flex-shrink: 0;\n        }\n        #card-container.list-view .folder-card .card-name { margin: 0; font-size: 16px; }\n\n        /* \u4e16\u754c\u4e66\u6587\u4ef6\u5939\u5361\u7247\u56fe\u6807\u4e0d\u6491\u6ee1 */\n        #lore-container .folder-icon {\n            width: 100%; aspect-ratio: unset; height: 64px; font-size: 28px;\n        }\n        #lore-container.list-view .folder-icon {\n            width: 44px; height: 44px; font-size: 20px; flex-shrink: 0;\n        }\n        .folder-tree-list { list-style: none; padding: 0; margin: 0; }\n        .folder-tree-item {\n            display: flex; align-items: center; gap: 8px;\n            padding: 9px 12px; border-radius: 8px; cursor: pointer;\n            font-size: 14px; color: var(--text-main); transition: 0.15s;\n            border: none; background: transparent; width: 100%; text-align: left;\n        }\n        .folder-tree-item:hover { background: rgba(106,147,176,0.12); }\n        .folder-tree-item.selected { background: rgba(106,147,176,0.2); color: var(--accent-blue); font-weight: 600; }\n        .folder-tree-item .indent { display: inline-block; width: 18px; flex-shrink: 0; }\n\n        /* --- \u624b\u673a\u7aef\u4e13\u95e8\u9002\u914d --- */\n        @media (max-width: 480px) {\n            .controls-panel { padding: 15px 12px; gap: 12px; }\n            .row { flex-direction: column; align-items: stretch; gap: 10px; }\n            .action-group { justify-content: space-between; width: 100%; gap: 8px; }\n            .action-group:first-child { display: flex; }\n            .action-group:first-child .btn { flex: 1; justify-content: center; } \n            .batch-actions-grid { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }\n            .batch-actions-grid .btn { flex: 1; padding: 10px 4px; font-size: 13px; }\n            .top-right-notice-btn { top: 12px; right: 12px; }\n            .controls-panel > .row:first-child { padding-right: 35px; } \n        }\n    <\/style>\n<\/head>\n<body>\n\n    <!-- \u2605 \u9876\u90e8\u5927\u7c7b\u5207\u6362 Tab \u2605 -->\n    <div class=\"main-tabs\">\n        <button class=\"main-tab active\" onclick=\"switchMainTab('cards')\">\u89d2\u8272\u5361<\/button>\n        <button class=\"main-tab\" onclick=\"switchMainTab('lorebooks')\">\u4e16\u754c\u4e66<\/button>\n        <button class=\"main-tab\" onclick=\"switchMainTab('themes')\">\u7f8e\u5316<\/button>\n        <button class=\"main-tab\" onclick=\"switchMainTab('html')\">HTML<\/button>\n    <\/div>\n\n    <!-- \u89d2\u8272\u5361\u9762\u677f -->\n    <div id=\"tab-cards\">\n    <div class=\"controls-panel\">\n        <button class=\"top-right-notice-btn\" onclick=\"openModal('notice-modal')\" aria-label=\"\u516c\u544a\">\n            <svg viewBox=\"0 0 24 24\"><path d=\"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9\"><\/path><path d=\"M13.73 21a2 2 0 0 1-3.46 0\"><\/path><\/svg>\n        <\/button>\n        <div class=\"row\">\n            <div class=\"action-group\">\n                <button class=\"btn\" onclick=\"document.getElementById('file-upload').click()\">\n                    <svg viewBox=\"0 0 24 24\"><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"><\/path><polyline points=\"17 8 12 3 7 8\"><\/polyline><line x1=\"12\" y1=\"3\" x2=\"12\" y2=\"15\"><\/line><\/svg>\n                    \u5bfc\u5165\u5361\u7247\n                <\/button>\n                <input type=\"file\" id=\"file-upload\" class=\"file-input\" multiple accept=\"image/png, application/json, text/plain, .png, .json, .txt, .docx\">\n            <\/div>\n            <div class=\"action-group\">\n                <button class=\"btn btn-secondary\" onclick=\"switchView('grid-view')\">\n                    <svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"><\/rect><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"><\/rect><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"><\/rect><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"><\/rect><\/svg>\n                    \u56fe\u6807\n                <\/button>\n                <button class=\"btn btn-secondary\" onclick=\"switchView('list-view')\">\n                    <svg viewBox=\"0 0 24 24\"><line x1=\"8\" y1=\"6\" x2=\"21\" y2=\"6\"><\/line><line x1=\"8\" y1=\"12\" x2=\"21\" y2=\"12\"><\/line><line x1=\"8\" y1=\"18\" x2=\"21\" y2=\"18\"><\/line><line x1=\"3\" y1=\"6\" x2=\"3.01\" y2=\"6\"><\/line><line x1=\"3\" y1=\"12\" x2=\"3.01\" y2=\"12\"><\/line><line x1=\"3\" y1=\"18\" x2=\"3.01\" y2=\"18\"><\/line><\/svg>\n                    \u5217\u8868\n                <\/button>\n                <button class=\"btn btn-secondary\" onclick=\"toggleTheme()\" id=\"theme-btn\" style=\"flex:0.5;\">\n                    <svg viewBox=\"0 0 24 24\"><path d=\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\"><\/path><\/svg>\n                <\/button>\n                <button class=\"btn btn-secondary\" id=\"install-btn\" onclick=\"triggerInstall()\" style=\"display:none;flex:0.5;\" title=\"\u5b89\u88c5\u5230\u684c\u9762\">\n                    <svg viewBox=\"0 0 24 24\"><path d=\"M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4\"/><polyline points=\"17 9 12 14 7 9\"/><line x1=\"12\" y1=\"14\" x2=\"12\" y2=\"3\"/><\/svg>\n                <\/button>\n            <\/div>\n        <\/div>\n        <hr>\n        <div id=\"cards-breadcrumb\" class=\"breadcrumb\"><\/div>\n        <div class=\"row\" style=\"background:rgba(0,0,0,0.03);padding:12px;border-radius:var(--radius-btn);\">\n            <div class=\"batch-actions-grid\" style=\"width:100%;display:flex;gap:8px;flex-wrap:wrap;\">\n                <button class=\"btn btn-secondary\" onclick=\"cardsMkdir()\">\n                    <svg viewBox=\"0 0 24 24\"><path d=\"M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z\"><\/path><line x1=\"12\" y1=\"11\" x2=\"12\" y2=\"17\"><\/line><line x1=\"9\" y1=\"14\" x2=\"15\" y2=\"14\"><\/line><\/svg>\n                    \u65b0\u5efa\u6587\u4ef6\u5939\n                <\/button>\n                <button class=\"btn btn-secondary\" onclick=\"toggleSelectAll()\">\n                    <svg viewBox=\"0 0 24 24\"><polyline points=\"9 11 12 14 22 4\"><\/polyline><path d=\"M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11\"><\/path><\/svg>\u5168\u9009\n                <\/button>\n                <button class=\"btn btn-secondary\" onclick=\"openMoveModal()\">\n                    <svg viewBox=\"0 0 24 24\"><polyline points=\"5 9 2 12 5 15\"><\/polyline><polyline points=\"9 5 12 2 15 5\"><\/polyline><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"><\/line><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"22\"><\/line><\/svg>\u79fb\u52a8\n                <\/button>\n                <button class=\"btn btn-danger\" onclick=\"deleteSelectedCards()\">\n                    <svg viewBox=\"0 0 24 24\"><polyline points=\"3 6 5 6 21 6\"><\/polyline><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"><\/path><\/svg>\u5220\u5361\u7247\n                <\/button>\n                <button class=\"btn btn-secondary\" onclick=\"cardsOpenSizeModal()\" title=\"\u8c03\u6574\u5361\u7247\u5927\u5c0f\">\n                    <svg viewBox=\"0 0 24 24\"><polyline points=\"15 3 21 3 21 9\"><\/polyline><polyline points=\"9 21 3 21 3 15\"><\/polyline><line x1=\"21\" y1=\"3\" x2=\"14\" y2=\"10\"><\/line><line x1=\"3\" y1=\"21\" x2=\"10\" y2=\"14\"><\/line><\/svg>\u5927\u5c0f\n                <\/button>\n            <\/div>\n        <\/div>\n    <\/div>\n    <div id=\"card-container\" class=\"grid-view\"><\/div>\n    <\/div><!-- /tab-cards -->\n\n    <!-- \u7f8e\u5316\u9762\u677f -->\n    <div id=\"tab-themes\" style=\"display:none;\">\n        <div class=\"controls-panel\">\n            <div class=\"row\">\n                <div class=\"action-group\" style=\"width:100%;\">\n                    <button class=\"btn\" onclick=\"document.getElementById('theme-file-upload').click()\" style=\"flex:1;\">\n                        <svg viewBox=\"0 0 24 24\"><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"><\/path><polyline points=\"17 8 12 3 7 8\"><\/polyline><line x1=\"12\" y1=\"3\" x2=\"12\" y2=\"15\"><\/line><\/svg>\n                        \u5bfc\u5165\n                    <\/button>\n                    <input type=\"file\" id=\"theme-file-upload\" class=\"file-input\" multiple accept=\".docx,.doc,.txt,.css,text/css,text/plain,application/octet-stream\">\n                    <button class=\"btn btn-secondary\" onclick=\"toggleTheme()\" id=\"theme-btn-themes\" style=\"flex:0 0 44px;padding:10px 0;\">\n                        <svg viewBox=\"0 0 24 24\"><path d=\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\"><\/path><\/svg>\n                    <\/button>\n                <\/div>\n            <\/div>\n            <hr>\n            <div id=\"themes-breadcrumb\" class=\"breadcrumb\"><\/div>\n            <div class=\"row\" style=\"background:rgba(0,0,0,0.03);padding:12px;border-radius:var(--radius-btn);\">\n                <div class=\"batch-actions-grid\" style=\"width:100%;display:flex;gap:8px;flex-wrap:wrap;\">\n                    <button class=\"btn btn-secondary\" onclick=\"themesMkdir()\">\n                        <svg viewBox=\"0 0 24 24\"><path d=\"M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z\"><\/path><line x1=\"12\" y1=\"11\" x2=\"12\" y2=\"17\"><\/line><line x1=\"9\" y1=\"14\" x2=\"15\" y2=\"14\"><\/line><\/svg>\n                        \u65b0\u5efa\u6587\u4ef6\u5939\n                    <\/button>\n                    <button class=\"btn btn-secondary\" onclick=\"themeToggleSelectAll()\">\n                        <svg viewBox=\"0 0 24 24\"><polyline points=\"9 11 12 14 22 4\"><\/polyline><path d=\"M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11\"><\/path><\/svg>\u5168\u9009\n                    <\/button>\n                    <button class=\"btn btn-secondary\" onclick=\"themeOpenMoveModal()\">\n                        <svg viewBox=\"0 0 24 24\"><polyline points=\"5 9 2 12 5 15\"><\/polyline><polyline points=\"9 5 12 2 15 5\"><\/polyline><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"><\/line><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"22\"><\/line><\/svg>\u79fb\u52a8\n                    <\/button>\n                    <button class=\"btn btn-danger\" onclick=\"themeDeleteSelected()\">\n                        <svg viewBox=\"0 0 24 24\"><polyline points=\"3 6 5 6 21 6\"><\/polyline><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"><\/path><\/svg>\u5220\u5361\u7247\n                    <\/button>\n                    <button class=\"btn btn-secondary\" onclick=\"themesOpenSizeModal()\" title=\"\u8c03\u6574\u5361\u7247\u5927\u5c0f\">\n                        <svg viewBox=\"0 0 24 24\"><polyline points=\"15 3 21 3 21 9\"><\/polyline><polyline points=\"9 21 3 21 3 15\"><\/polyline><line x1=\"21\" y1=\"3\" x2=\"14\" y2=\"10\"><\/line><line x1=\"3\" y1=\"21\" x2=\"10\" y2=\"14\"><\/line><\/svg>\u5927\u5c0f\n                    <\/button>\n                <\/div>\n            <\/div>\n        <\/div>\n        <div id=\"theme-card-container\" style=\"display:grid;gap:12px;grid-template-columns:repeat(2,1fr);\"><\/div>\n    <\/div>\n\n    <!-- HTML\u5de5\u5177\u9762\u677f -->\n    <div id=\"tab-html\" style=\"display:none;\">\n        <div class=\"controls-panel\">\n            <!-- \u7b2c\u4e00\u884c\uff1a\u5bfc\u5165 \u5bfc\u51fa \u591c\u95f4 -->\n            <div class=\"row\">\n                <div class=\"action-group\" style=\"width:100%;\">\n                    <button class=\"btn\" onclick=\"document.getElementById('html-file-upload').click()\" style=\"flex:1;\">\n                        <svg viewBox=\"0 0 24 24\"><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"><\/path><polyline points=\"17 8 12 3 7 8\"><\/polyline><line x1=\"12\" y1=\"3\" x2=\"12\" y2=\"15\"><\/line><\/svg>\n                        \u5bfc\u5165\n                    <\/button>\n                    <input type=\"file\" id=\"html-file-upload\" class=\"file-input\" multiple accept=\".docx,.doc,.dox,.txt,.json,text/plain,application/json,application/octet-stream\">\n                    <button class=\"btn btn-secondary\" onclick=\"toggleTheme()\" id=\"theme-btn-html\" style=\"flex:0 0 44px; padding:10px 0;\">\n                        <svg viewBox=\"0 0 24 24\"><path d=\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\"><\/path><\/svg>\n                    <\/button>\n                <\/div>\n            <\/div>\n            <hr>\n            <!-- \u9762\u5305\u5c51\u5bfc\u822a -->\n            <div id=\"html-breadcrumb\" class=\"breadcrumb\"><\/div>\n            <!-- \u6279\u91cf\u64cd\u4f5c\u680f -->\n            <div class=\"row\" style=\"background:rgba(0,0,0,0.03); padding:12px; border-radius:var(--radius-btn);\">\n                <div class=\"batch-actions-grid\" style=\"width:100%; display:flex; gap:8px; flex-wrap:wrap;\">\n                    <button class=\"btn btn-secondary\" onclick=\"htmlMkdir()\">\n                        <svg viewBox=\"0 0 24 24\"><path d=\"M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z\"><\/path><line x1=\"12\" y1=\"11\" x2=\"12\" y2=\"17\"><\/line><line x1=\"9\" y1=\"14\" x2=\"15\" y2=\"14\"><\/line><\/svg>\n                        \u65b0\u5efa\u6587\u4ef6\u5939\n                    <\/button>\n                    <button class=\"btn btn-secondary\" onclick=\"htmlToggleSelectAll()\">\n                        <svg viewBox=\"0 0 24 24\"><polyline points=\"9 11 12 14 22 4\"><\/polyline><path d=\"M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11\"><\/path><\/svg>\u5168\u9009\n                    <\/button>\n                    <button class=\"btn btn-secondary\" onclick=\"htmlOpenMoveModal()\">\n                        <svg viewBox=\"0 0 24 24\"><polyline points=\"5 9 2 12 5 15\"><\/polyline><polyline points=\"9 5 12 2 15 5\"><\/polyline><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"><\/line><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"22\"><\/line><\/svg>\u79fb\u52a8\n                    <\/button>\n                    <button class=\"btn btn-danger\" onclick=\"htmlDeleteSelected()\">\n                        <svg viewBox=\"0 0 24 24\"><polyline points=\"3 6 5 6 21 6\"><\/polyline><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"><\/path><\/svg>\u5220\u5361\u7247\n                    <\/button>\n                    <button class=\"btn btn-secondary\" onclick=\"htmlOpenSizeModal()\" title=\"\u8c03\u6574\u5361\u7247\u5927\u5c0f\">\n                        <svg viewBox=\"0 0 24 24\"><polyline points=\"15 3 21 3 21 9\"><\/polyline><polyline points=\"9 21 3 21 3 15\"><\/polyline><line x1=\"21\" y1=\"3\" x2=\"14\" y2=\"10\"><\/line><line x1=\"3\" y1=\"21\" x2=\"10\" y2=\"14\"><\/line><\/svg>\u5927\u5c0f\n                    <\/button>\n                <\/div>\n            <\/div>\n        <\/div>\n        <div id=\"html-card-container\" style=\"display:grid; gap:12px; grid-template-columns:repeat(2,1fr);\"><\/div>\n    <\/div>\n\n    <!-- \u4e16\u754c\u4e66\u9762\u677f -->\n    <div id=\"tab-lorebooks\" style=\"display:none;\">\n        <div class=\"controls-panel\">\n            <div class=\"row\">\n                <div class=\"action-group\">\n                    <button class=\"btn\" onclick=\"document.getElementById('lorebook-upload').click()\">\n                        <svg viewBox=\"0 0 24 24\"><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"><\/path><polyline points=\"17 8 12 3 7 8\"><\/polyline><line x1=\"12\" y1=\"3\" x2=\"12\" y2=\"15\"><\/line><\/svg>\n                        \u5bfc\u5165\u4e16\u754c\u4e66\n                    <\/button>\n                    <input type=\"file\" id=\"lorebook-upload\" class=\"file-input\" multiple accept=\".png,.json,.txt,.docx,.doc,.pdf,image/png,application/json,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document\">\n                <\/div>\n                <div class=\"action-group\">\n                    <button class=\"btn btn-secondary\" onclick=\"switchLoreView('grid-view')\">\n                        <svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"><\/rect><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"><\/rect><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"><\/rect><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"><\/rect><\/svg>\n                        \u56fe\u6807\n                    <\/button>\n                    <button class=\"btn btn-secondary\" onclick=\"switchLoreView('list-view')\">\n                        <svg viewBox=\"0 0 24 24\"><line x1=\"8\" y1=\"6\" x2=\"21\" y2=\"6\"><\/line><line x1=\"8\" y1=\"12\" x2=\"21\" y2=\"12\"><\/line><line x1=\"8\" y1=\"18\" x2=\"21\" y2=\"18\"><\/line><line x1=\"3\" y1=\"6\" x2=\"3.01\" y2=\"6\"><\/line><line x1=\"3\" y1=\"12\" x2=\"3.01\" y2=\"12\"><\/line><line x1=\"3\" y1=\"18\" x2=\"3.01\" y2=\"18\"><\/line><\/svg>\n                        \u5217\u8868\n                    <\/button>\n                    <button class=\"btn btn-secondary\" onclick=\"toggleTheme()\" id=\"theme-btn-lore\" style=\"flex:0.5;\">\n                        <svg viewBox=\"0 0 24 24\"><path d=\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\"><\/path><\/svg>\n                    <\/button>\n                <\/div>\n            <\/div>\n            <hr>\n            <div id=\"lore-breadcrumb\" class=\"breadcrumb\"><\/div>\n            <div class=\"row\" style=\"background:rgba(0,0,0,0.03);padding:12px;border-radius:var(--radius-btn);\">\n                <div class=\"batch-actions-grid\" style=\"width:100%;display:flex;gap:8px;flex-wrap:wrap;\">\n                    <button class=\"btn btn-secondary\" onclick=\"loreMkdir()\">\n                        <svg viewBox=\"0 0 24 24\"><path d=\"M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z\"><\/path><line x1=\"12\" y1=\"11\" x2=\"12\" y2=\"17\"><\/line><line x1=\"9\" y1=\"14\" x2=\"15\" y2=\"14\"><\/line><\/svg>\n                        \u65b0\u5efa\u6587\u4ef6\u5939\n                    <\/button>\n                    <button class=\"btn btn-secondary\" onclick=\"loreToggleSelectAll()\">\n                        <svg viewBox=\"0 0 24 24\"><polyline points=\"9 11 12 14 22 4\"><\/polyline><path d=\"M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11\"><\/path><\/svg>\u5168\u9009\n                    <\/button>\n                    <button class=\"btn btn-secondary\" onclick=\"loreOpenMoveModal()\">\n                        <svg viewBox=\"0 0 24 24\"><polyline points=\"5 9 2 12 5 15\"><\/polyline><polyline points=\"9 5 12 2 15 5\"><\/polyline><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"><\/line><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"22\"><\/line><\/svg>\u79fb\u52a8\n                    <\/button>\n                    <button class=\"btn btn-danger\" onclick=\"loreDeleteSelected()\">\n                        <svg viewBox=\"0 0 24 24\"><polyline points=\"3 6 5 6 21 6\"><\/polyline><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"><\/path><\/svg>\u5220\u6761\u76ee\n                    <\/button>\n                    <button class=\"btn btn-secondary\" onclick=\"loreOpenSizeModal()\" title=\"\u8c03\u6574\u5927\u5c0f\">\n                        <svg viewBox=\"0 0 24 24\"><polyline points=\"15 3 21 3 21 9\"><\/polyline><polyline points=\"9 21 3 21 3 15\"><\/polyline><line x1=\"21\" y1=\"3\" x2=\"14\" y2=\"10\"><\/line><line x1=\"3\" y1=\"21\" x2=\"10\" y2=\"14\"><\/line><\/svg>\u5927\u5c0f\n                    <\/button>\n                <\/div>\n            <\/div>\n        <\/div>\n        <div id=\"lore-container\" class=\"grid-view\"><\/div>\n    <\/div>\n\n    <!-- \u901a\u7528\u5927\u5c0f\u5f39\u7a97\uff08\u89d2\u8272\u5361/\u7f8e\u5316/\u4e16\u754c\u4e66\u5171\u7528\uff0c\u5185\u5bb9\u7531 JS \u52a8\u6001\u586b\u5145\uff09 -->\n    <div id=\"generic-size-modal\" class=\"modal\">\n        <div class=\"modal-content\" style=\"max-height:max-content;\">\n            <div class=\"modal-header\">\n                <h3>\u6bcf\u884c\u663e\u793a\u5361\u7247\u6570<\/h3>\n                <button class=\"close-btn\" onclick=\"closeModal('generic-size-modal')\"><svg viewBox=\"0 0 24 24\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"><\/line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"><\/line><\/svg><\/button>\n            <\/div>\n            <div class=\"modal-body-scroll\" style=\"display:flex;gap:12px;justify-content:center;padding:24px;\">\n                <button class=\"btn btn-secondary\" id=\"gcol-2\" onclick=\"genericSetCols(2)\" style=\"flex:1;font-size:20px;padding:18px 0;\">2<\/button>\n                <button class=\"btn btn-secondary\" id=\"gcol-3\" onclick=\"genericSetCols(3)\" style=\"flex:1;font-size:20px;padding:18px 0;\">3<\/button>\n                <button class=\"btn btn-secondary\" id=\"gcol-4\" onclick=\"genericSetCols(4)\" style=\"flex:1;font-size:20px;padding:18px 0;\">4<\/button>\n            <\/div>\n        <\/div>\n    <\/div>\n\n    <!-- \u9762\u5305\u5c51\u300c\u5168\u90e8\u300d\u8df3\u8f6c\u5f39\u7a97 -->\n    <div id=\"jump-modal\" class=\"modal\">\n        <div class=\"modal-content\" style=\"max-height:max-content;max-width:360px;\">\n            <div class=\"modal-header\">\n                <h3>\u8df3\u8f6c\u5230\u6587\u4ef6\u5939<\/h3>\n                <button class=\"close-btn\" onclick=\"closeModal('jump-modal')\"><svg viewBox=\"0 0 24 24\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"><\/line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"><\/line><\/svg><\/button>\n            <\/div>\n            <div class=\"modal-body-scroll\" style=\"padding:12px 16px;max-height:55vh;\">\n                <ul id=\"jump-tree-list\" class=\"folder-tree-list\"><\/ul>\n            <\/div>\n        <\/div>\n    <\/div>\n\n    <!-- HTML\u5361\u7247\u5927\u5c0f\u5f39\u7a97 -->    <div id=\"html-size-modal\" class=\"modal\">\n        <div class=\"modal-content\" style=\"max-height:max-content;\">\n            <div class=\"modal-header\">\n                <h3>\u6bcf\u884c\u663e\u793a\u5361\u7247\u6570<\/h3>\n                <button class=\"close-btn\" onclick=\"closeModal('html-size-modal')\"><svg viewBox=\"0 0 24 24\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"><\/line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"><\/line><\/svg><\/button>\n            <\/div>\n            <div class=\"modal-body-scroll\" style=\"display:flex; gap:12px; justify-content:center; padding:24px;\">\n                <button class=\"btn btn-secondary\" onclick=\"htmlSetCols(2)\" id=\"html-col-btn-2\" style=\"flex:1; font-size:20px; padding:18px 0;\">2<\/button>\n                <button class=\"btn btn-secondary\" onclick=\"htmlSetCols(3)\" id=\"html-col-btn-3\" style=\"flex:1; font-size:20px; padding:18px 0;\">3<\/button>\n                <button class=\"btn btn-secondary\" onclick=\"htmlSetCols(4)\" id=\"html-col-btn-4\" style=\"flex:1; font-size:20px; padding:18px 0;\">4<\/button>\n            <\/div>\n        <\/div>\n    <\/div>\n\n    <!-- \u7f8e\u5316\u9884\u89c8\u5f39\u7a97 -->\n    <div id=\"theme-render-modal\" class=\"modal\">\n        <div class=\"modal-content\" style=\"max-width:95vw;width:95vw;height:90vh;max-height:90vh;\">\n            <div class=\"modal-header\">\n                <div style=\"display:flex;align-items:center;gap:10px;flex:1;min-width:0;\">\n                    <h3 id=\"theme-render-title\" style=\"margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\">\u9884\u89c8<\/h3>\n                    <button class=\"btn btn-secondary\" onclick=\"switchThemeToSource()\" style=\"flex-shrink:0;padding:6px 12px;font-size:13px;height:32px;\">\n                        <svg viewBox=\"0 0 24 24\" style=\"width:14px;height:14px;\"><polyline points=\"16 18 22 12 16 6\"><\/polyline><polyline points=\"8 6 2 12 8 18\"><\/polyline><\/svg>\n                        \u6e90\u4ee3\u7801\n                    <\/button>\n                <\/div>\n                <button class=\"close-btn\" onclick=\"closeModal('theme-render-modal')\"><svg viewBox=\"0 0 24 24\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"><\/line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"><\/line><\/svg><\/button>\n            <\/div>\n            <div style=\"flex:1;overflow:hidden;padding:0;\">\n                <iframe id=\"theme-render-frame\" style=\"width:100%;height:100%;border:none;border-radius:0 0 20px 20px;\"><\/iframe>\n            <\/div>\n        <\/div>\n    <\/div>\n\n    <!-- \u7f8e\u5316\u6e90\u7801\u5f39\u7a97 -->\n    <div id=\"theme-source-modal\" class=\"modal\">\n        <div class=\"modal-content\" style=\"max-width:95vw;width:95vw;height:90vh;max-height:90vh;\">\n            <div class=\"modal-header\">\n                <div style=\"display:flex;align-items:center;gap:10px;flex:1;min-width:0;\">\n                    <button class=\"btn btn-secondary\" onclick=\"switchThemeToRender()\" style=\"flex-shrink:0;padding:6px 12px;font-size:13px;height:32px;\">\n                        <svg viewBox=\"0 0 24 24\" style=\"width:14px;height:14px;\"><polyline points=\"15 18 9 12 15 6\"><\/polyline><\/svg>\n                        \u8fd4\u56de\u9884\u89c8\n                    <\/button>\n                    <h3 id=\"theme-source-title\" style=\"margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\">\u6e90\u4ee3\u7801<\/h3>\n                <\/div>\n                <button class=\"close-btn\" onclick=\"closeModal('theme-source-modal')\"><svg viewBox=\"0 0 24 24\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"><\/line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"><\/line><\/svg><\/button>\n            <\/div>\n            <div style=\"flex:1;overflow:auto;padding:16px 20px;\">\n                <pre id=\"theme-source-code\" style=\"margin:0;white-space:pre-wrap;word-break:break-all;font-family:'Courier New',Courier,monospace;font-size:13px;line-height:1.6;color:var(--text-main);background:transparent;\"><\/pre>\n            <\/div>\n            <div class=\"modal-actions\">\n                <button class=\"btn\" id=\"theme-source-copy-btn\" onclick=\"copyThemeSource()\">\n                    <svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"><\/rect><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"><\/path><\/svg>\n                    \u590d\u5236\u6e90\u4ee3\u7801\n                <\/button>\n            <\/div>\n        <\/div>\n    <\/div>\n\n    <!-- HTML\u6e32\u67d3\u5f39\u7a97 -->\n    <div id=\"html-render-modal\" class=\"modal\">\n        <div class=\"modal-content\" style=\"max-width:95vw; width:95vw; height:90vh; max-height:90vh;\">\n            <div class=\"modal-header\">\n                <div style=\"display:flex; align-items:center; gap:10px; flex:1; min-width:0;\">\n                    <h3 id=\"html-render-title\" style=\"margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;\">\u9884\u89c8<\/h3>\n                    <button class=\"btn btn-secondary\" onclick=\"switchToSource()\" style=\"flex-shrink:0; padding:6px 12px; font-size:13px; height:32px;\">\n                        <svg viewBox=\"0 0 24 24\" style=\"width:14px;height:14px;\"><polyline points=\"16 18 22 12 16 6\"><\/polyline><polyline points=\"8 6 2 12 8 18\"><\/polyline><\/svg>\n                        \u6e90\u6587\u4ef6\n                    <\/button>\n                <\/div>\n                <button class=\"close-btn\" onclick=\"closeModal('html-render-modal')\"><svg viewBox=\"0 0 24 24\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"><\/line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"><\/line><\/svg><\/button>\n            <\/div>\n            <div style=\"flex:1; overflow:hidden; padding:0;\">\n                <iframe id=\"html-render-frame\" style=\"width:100%; height:100%; border:none; border-radius:0 0 20px 20px;\"><\/iframe>\n            <\/div>\n        <\/div>\n    <\/div>\n\n    <!-- \u6e90\u6587\u4ef6\u67e5\u770b\u5f39\u7a97 -->\n    <div id=\"html-source-modal\" class=\"modal\">\n        <div class=\"modal-content\" style=\"max-width:95vw; width:95vw; height:90vh; max-height:90vh;\">\n            <div class=\"modal-header\">\n                <div style=\"display:flex; align-items:center; gap:10px; flex:1; min-width:0;\">\n                    <button class=\"btn btn-secondary\" onclick=\"switchToRender()\" style=\"flex-shrink:0; padding:6px 12px; font-size:13px; height:32px;\">\n                        <svg viewBox=\"0 0 24 24\" style=\"width:14px;height:14px;\"><polyline points=\"15 18 9 12 15 6\"><\/polyline><\/svg>\n                        \u8fd4\u56de\u9884\u89c8\n                    <\/button>\n                    <h3 id=\"html-source-title\" style=\"margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;\">\u6e90\u6587\u4ef6<\/h3>\n                <\/div>\n                <button class=\"close-btn\" onclick=\"closeModal('html-source-modal')\"><svg viewBox=\"0 0 24 24\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"><\/line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"><\/line><\/svg><\/button>\n            <\/div>\n            <div style=\"flex:1; overflow:auto; padding:16px 20px;\">\n                <pre id=\"html-source-code\" style=\"margin:0; white-space:pre-wrap; word-break:break-all; font-family:'Courier New',Courier,monospace; font-size:13px; line-height:1.6; color:var(--text-main); background:transparent;\"><\/pre>\n            <\/div>\n            <div class=\"modal-actions\">\n                <button class=\"btn\" id=\"html-source-copy-btn\" onclick=\"copyHtmlSource()\">\n                    <svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"><\/rect><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"><\/path><\/svg>\n                    \u590d\u5236\u5168\u90e8\n                <\/button>\n            <\/div>\n        <\/div>\n    <\/div>\n\n    <!-- \u5b89\u88c5\u5230\u684c\u9762\u8bf4\u660e\u5f39\u7a97 -->\n    <div id=\"install-modal\" class=\"modal\">\n        <div class=\"modal-content\" style=\"max-width: 420px;\">\n            <div class=\"modal-header\">\n                <h3>\ud83d\udcf2 \u6dfb\u52a0\u5230\u684c\u9762<\/h3>\n                <button class=\"close-btn\" onclick=\"closeModal('install-modal')\"><svg viewBox=\"0 0 24 24\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"><\/line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"><\/line><\/svg><\/button>\n            <\/div>\n            <div class=\"modal-body-scroll\" style=\"gap: 16px; display: flex; flex-direction: column;\">\n                <div style=\"background: rgba(106,147,176,0.1); border-left: 4px solid var(--accent-blue); border-radius: 8px; padding: 14px;\">\n                    <div style=\"font-weight: 700; color: var(--text-main); margin-bottom: 8px;\">\ud83d\udd37 Microsoft Edge<\/div>\n                    <div style=\"color: var(--text-muted); font-size: 14px; line-height: 1.8;\">\n                        \u53f3\u4e0a\u89d2\u83dc\u5355 <b>\u22ef<\/b> \u2192 <b>\u5e94\u7528<\/b> \u2192 <b>\u5c06\u6b64\u7ad9\u70b9\u5b89\u88c5\u4e3a\u5e94\u7528<\/b> \u2192 \u786e\u8ba4\n                    <\/div>\n                <\/div>\n                <div style=\"background: rgba(106,147,176,0.1); border-left: 4px solid var(--accent-blue); border-radius: 8px; padding: 14px;\">\n                    <div style=\"font-weight: 700; color: var(--text-main); margin-bottom: 8px;\">\ud83d\udd35 Google Chrome<\/div>\n                    <div style=\"color: var(--text-muted); font-size: 14px; line-height: 1.8;\">\n                        \u53f3\u4e0a\u89d2\u83dc\u5355 <b>\u22ee<\/b> \u2192 <b>\u66f4\u591a\u5de5\u5177<\/b> \u2192 <b>\u521b\u5efa\u5feb\u6377\u65b9\u5f0f<\/b> \u2192 \u52fe\u9009\u300c<b>\u5728\u7a97\u53e3\u4e2d\u6253\u5f00<\/b>\u300d\u2192 \u521b\u5efa\n                    <\/div>\n                <\/div>\n                <div style=\"background: rgba(201,122,126,0.1); border-left: 4px solid var(--accent-red); border-radius: 8px; padding: 14px;\">\n                    <div style=\"font-weight: 700; color: var(--text-main); margin-bottom: 6px;\">\u26a0\ufe0f \u6ce8\u610f<\/div>\n                    <div style=\"color: var(--text-muted); font-size: 13px; line-height: 1.7;\">\u5b89\u88c5\u540e\u6bcf\u6b21\u6253\u5f00\u90fd\u662f\u72ec\u7acb\u7a97\u53e3\uff0c<b>\u4f46\u6570\u636e\u4ecd\u4e0d\u4f1a\u8de8\u4f1a\u8bdd\u4fdd\u5b58<\/b>\uff0c\u8bf7\u6574\u7406\u540e\u8bb0\u5f97\u5bfc\u51fa\u3002<\/div>\n                <\/div>\n            <\/div>\n            <div class=\"modal-actions\">\n                <button class=\"btn\" id=\"install-prompt-btn\" onclick=\"triggerInstall()\" style=\"display:none;\">\n                    <svg viewBox=\"0 0 24 24\"><path d=\"M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4\"/><polyline points=\"17 9 12 14 7 9\"/><line x1=\"12\" y1=\"14\" x2=\"12\" y2=\"3\"/><\/svg>\n                    \u7acb\u5373\u5b89\u88c5\n                <\/button>\n                <button class=\"btn btn-secondary\" onclick=\"closeModal('install-modal')\">\u77e5\u9053\u4e86<\/button>\n            <\/div>\n        <\/div>\n    <\/div>\n\n    <!-- \u516c\u544a\u5f39\u7a97 -->\n    <div id=\"notice-modal\" class=\"modal\">\n        <div class=\"modal-content\">\n            <div class=\"modal-header\">\n                <h3>\u7cfb\u7edf\u516c\u544a<\/h3>\n                <button class=\"close-btn\" onclick=\"closeModal('notice-modal')\"><svg viewBox=\"0 0 24 24\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"><\/line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"><\/line><\/svg><\/button>\n            <\/div>\n            <div class=\"modal-body-scroll\">\n                <div class=\"notice-important\">\u26a0\ufe0f \u8b66\u544a\uff1a\u3010\u7eaf\u524d\u7aef\uff0c\u5237\u65b0\u5373\u4e22\u5931\u3011<\/div>\n                <p>\u672c\u5de5\u5177\u57fa\u4e8e<b>\u7eaf\u672c\u5730\u524d\u7aef\u6280\u672f<\/b>\u6784\u5efa\uff0c\u60a8\u7684\u5361\u7247\u4ec5\u4fdd\u5b58\u5728\u5f53\u524d\u6d4f\u89c8\u5668\u7684\u4e34\u65f6\u7f13\u5b58\u4e2d\u3002<\/p>\n                <p>\u8fd9\u610f\u5473\u7740\uff1a<\/p>\n                <ul>\n                    <li>\u6211\u4eec<b>\u4e0d\u4f1a<\/b>\u6536\u96c6\u60a8\u7684\u4efb\u4f55\u6570\u636e\u3002<\/li>\n                    <li>\u4e00\u65e6\u60a8<b>\u5237\u65b0\u9875\u9762\u3001\u5173\u95ed\u6807\u7b7e\u9875\u6216\u6e05\u7406\u6d4f\u89c8\u5668\u7f13\u5b58<\/b>\uff0c\u672a\u5bfc\u51fa\u7684\u8fdb\u5ea6\u5c06\u6c38\u4e45\u4e22\u5931\u3002<\/li>\n                <\/ul>\n                <p><b>\u5efa\u8bae\uff1a<\/b>\u6574\u7406\u5b8c\u6bd5\u540e\uff0c\u52a1\u5fc5\u4f7f\u7528<b>\u300c\u5bfc\u51fa\u300d<\/b>\u529f\u80fd\u4e0b\u8f7d\u5907\u4efd\uff01<\/p>\n            <\/div>\n            <div class=\"modal-actions\">\n                <button class=\"btn\" onclick=\"closeModal('notice-modal')\">\u6211\u5df2\u4e86\u89e3<\/button>\n            <\/div>\n        <\/div>\n    <\/div>\n\n    <!-- \u89d2\u8272\u8be6\u60c5\u5f39\u7a97 -->\n    <div id=\"character-modal\" class=\"modal\">\n        <div class=\"modal-content\" style=\"max-width: 500px;\">\n            <div class=\"modal-header\">\n                <h2 id=\"modal-title\"><\/h2>\n                <button class=\"close-btn\" onclick=\"closeModal('character-modal')\"><svg viewBox=\"0 0 24 24\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"><\/line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"><\/line><\/svg><\/button>\n            <\/div>\n            <div class=\"modal-body-scroll\" id=\"modal-body\" style=\"white-space: pre-wrap; font-size: 14px;\"><\/div>\n            <div class=\"modal-actions\">\n                <button class=\"btn btn-secondary\" onclick=\"copyModalDesc()\">\n                    <svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"><\/rect><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"><\/path><\/svg>\n                    \u590d\u5236\u4eba\u8bbe\n                <\/button>\n            <\/div>\n        <\/div>\n    <\/div>\n\n    <!-- \u4e16\u754c\u4e66\u8be6\u60c5\u5f39\u7a97 -->\n    <div id=\"lore-modal\" class=\"modal\">\n        <div class=\"modal-content\" style=\"max-width:500px;\">\n            <div class=\"modal-header\">\n                <h2 id=\"lore-modal-title\"><\/h2>\n                <button class=\"close-btn\" onclick=\"closeModal('lore-modal')\"><svg viewBox=\"0 0 24 24\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"><\/line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"><\/line><\/svg><\/button>\n            <\/div>\n            <div class=\"modal-body-scroll\" id=\"lore-modal-body\" style=\"white-space:pre-wrap;font-size:14px;\"><\/div>\n            <div class=\"modal-actions\">\n                <button class=\"btn btn-secondary\" id=\"lore-copy-btn\" onclick=\"copyLoreContent()\">\n                    <svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"><\/rect><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"><\/path><\/svg>\n                    \u590d\u5236\u4e16\u754c\u4e66\n                <\/button>\n            <\/div>\n        <\/div>\n    <\/div>\n\n    <!-- \u65b0\u5efa\u6587\u4ef6\u5939\u5f39\u7a97\uff08\u4e09\u4e2a\u9762\u677f\u5171\u7528\uff09 -->\n    <div id=\"mkdir-modal\" class=\"modal\">\n        <div class=\"modal-content\" style=\"max-height: max-content;\">\n            <div class=\"modal-header\">\n                <h3>\u65b0\u5efa\u6587\u4ef6\u5939<\/h3>\n                <button class=\"close-btn\" onclick=\"closeModal('mkdir-modal')\"><svg viewBox=\"0 0 24 24\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"><\/line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"><\/line><\/svg><\/button>\n            <\/div>\n            <div class=\"modal-body-scroll\" style=\"padding-bottom:0;\">\n                <p id=\"mkdir-hint\" style=\"margin:0 0 10px; font-size:13px; color:var(--text-muted);\"><\/p>\n                <input type=\"text\" id=\"mkdir-input\" class=\"modal-input\" placeholder=\"\u8f93\u5165\u6587\u4ef6\u5939\u540d\u79f0\">\n            <\/div>\n            <div class=\"modal-actions\">\n                <button class=\"btn btn-secondary\" onclick=\"closeModal('mkdir-modal')\">\u53d6\u6d88<\/button>\n                <button class=\"btn\" onclick=\"mkdirConfirm()\">\u786e\u8ba4\u521b\u5efa<\/button>\n            <\/div>\n        <\/div>\n    <\/div>\n\n    <!-- \u79fb\u52a8\u5f39\u7a97\uff08\u4e09\u4e2a\u9762\u677f\u5171\u7528\uff0c\u6811\u5f62\u9009\u62e9\uff09 -->\n    <div id=\"move-modal\" class=\"modal\">\n        <div class=\"modal-content\" style=\"max-height: max-content; max-width:380px;\">\n            <div class=\"modal-header\">\n                <h3>\u79fb\u52a8\u5230...<\/h3>\n                <button class=\"close-btn\" onclick=\"closeModal('move-modal')\"><svg viewBox=\"0 0 24 24\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"><\/line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"><\/line><\/svg><\/button>\n            <\/div>\n            <div class=\"modal-body-scroll\" style=\"padding:12px 16px; max-height:50vh;\">\n                <ul id=\"move-tree-list\" class=\"folder-tree-list\"><\/ul>\n            <\/div>\n            <div class=\"modal-actions\">\n                <button class=\"btn btn-secondary\" onclick=\"closeModal('move-modal')\">\u53d6\u6d88<\/button>\n                <button class=\"btn\" onclick=\"confirmMove()\">\u786e\u8ba4\u79fb\u52a8<\/button>\n            <\/div>\n        <\/div>\n    <\/div>\n\n    <!-- \u52a0\u8f7d\u52a8\u753b\u5f39\u7a97 -->\n    <div id=\"loading-modal\" class=\"modal\" style=\"z-index: 999;\">\n        <div class=\"modal-content\">\n            <div class=\"spinner\"><\/div>\n            <h3 id=\"loading-text\" style=\"text-shadow: 0 2px 4px rgba(0,0,0,0.5);\">\u6b63\u5728\u89e3\u6790\u5e95\u5c42\u6570\u636e...<\/h3>\n        <\/div>\n    <\/div>\n\n    <script>\n        // \u2605 \u5fc5\u987b\u63d0\u524d\u5b9a\u4e49\uff0ctab onclick \u9700\u8981\u5728DOM\u52a0\u8f7d\u65f6\u5c31\u80fd\u8bbf\u95ee\n        function switchMainTab(tab) {\n            ['cards','lorebooks','themes','html'].forEach(function(t) {\n                var el = document.getElementById('tab-' + t);\n                if (el) el.style.display = (t === tab) ? 'block' : 'none';\n            });\n            document.querySelectorAll('.main-tab').forEach(function(btn, i) {\n                btn.classList.toggle('active', ['cards','lorebooks','themes','html'][i] === tab);\n            });\n        }\n    <\/script>\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js\"><\/script>\n    <script>\n        // ============================================================\n        // \u2605\u2605\u2605 \u901a\u7528\u6811\u5f62\u6587\u4ef6\u5939\u7cfb\u7edf FolderTree \u2605\u2605\u2605\n        // ============================================================\n        class FolderTree {\n            constructor() {\n                // folders: { id, name, parentId }\n                // \u6839\u8282\u70b9 id = 'root'\uff0c\u4e0d\u5b58\u5728\u4e8e\u6570\u7ec4\u4e2d\uff0cparentId=null \u8868\u793a\u5728\u6839\u4e0b\n                this.folders = [];\n                this.currentId = 'root'; // \u5f53\u524d\u6240\u5728\u6587\u4ef6\u5939 id\n            }\n            mkFolder(name, parentId) {\n                parentId = parentId || 'root';\n                const id = 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);\n                this.folders.push({ id, name, parentId });\n                return id;\n            }\n            // \u83b7\u53d6\u67d0\u6587\u4ef6\u5939\u7684\u76f4\u63a5\u5b50\u6587\u4ef6\u5939\n            children(parentId) {\n                parentId = parentId || 'root';\n                return this.folders.filter(f => f.parentId === parentId);\n            }\n            // \u83b7\u53d6\u67d0\u6587\u4ef6\u5939\u7684\u6240\u6709\u540e\u4ee3 id\uff08\u542b\u81ea\u8eab\uff09\n            descendants(folderId) {\n                const result = [folderId];\n                const queue = [folderId];\n                while (queue.length) {\n                    const pid = queue.shift();\n                    const kids = this.folders.filter(f => f.parentId === pid).map(f => f.id);\n                    result.push(...kids);\n                    queue.push(...kids);\n                }\n                return result;\n            }\n            // \u83b7\u53d6\u8def\u5f84\u6570\u7ec4 [{id,name},...] \u4ece\u6839\u5230\u5f53\u524d\n            path(folderId) {\n                folderId = folderId || this.currentId;\n                const parts = [];\n                let cur = folderId;\n                while (cur && cur !== 'root') {\n                    const f = this.folders.find(x => x.id === cur);\n                    if (!f) break;\n                    parts.unshift(f);\n                    cur = f.parentId;\n                }\n                return parts; // \u4e0d\u542b\u6839\u8282\u70b9\u672c\u8eab\uff0c\u6839\u8282\u70b9\u7528\"\u5168\u90e8\"\u663e\u793a\n            }\n            getFolderById(id) {\n                if (id === 'root') return { id: 'root', name: '\u5168\u90e8', parentId: null };\n                return this.folders.find(f => f.id === id) || null;\n            }\n            // \u5220\u9664\u6587\u4ef6\u5939\uff08\u542b\u540e\u4ee3\uff09\uff0c\u8fd4\u56de\u88ab\u5220 id \u5217\u8868\n            deleteFolder(folderId) {\n                if (folderId === 'root') return [];\n                const ids = this.descendants(folderId);\n                this.folders = this.folders.filter(f => !ids.includes(f.id));\n                return ids;\n            }\n            // \u6e32\u67d3\u6241\u5e73\u6811\u5f62\u5217\u8868\uff08\u7528\u4e8e\u79fb\u52a8\u9009\u62e9\u5668\uff09\uff0c\u8df3\u8fc7 skipIds\n            flatTree(skipIds) {\n                skipIds = skipIds || [];\n                const result = [];\n                const walk = (parentId, depth) => {\n                    const kids = this.children(parentId);\n                    kids.forEach(f => {\n                        if (!skipIds.includes(f.id)) {\n                            result.push({ ...f, depth });\n                            walk(f.id, depth + 1);\n                        }\n                    });\n                };\n                result.push({ id: 'root', name: '\u5168\u90e8\uff08\u6839\u76ee\u5f55\uff09', depth: 0 });\n                walk('root', 1);\n                return result;\n            }\n        }\n\n        // ============================================================\n        // \u2605 \u5e94\u7528\u72b6\u6001\n        // ============================================================\n        let appState = {\n            tree: new FolderTree(),\n            cards: [],     // { id, name, initial, description, color, folderId, imageUrl }\n            isDarkMode: false\n        };\n        let htmlState = {\n            tree: new FolderTree(),\n            tools: []      // { id, name, htmlContent, folderId }\n        };\n        let themesState = {\n            tree: new FolderTree(),\n            items: []\n        };\n        let loreState = {\n            tree: new FolderTree(),\n            cards: []      // { id, name, initial, description, color, folderId, imageUrl }\n        };\n        const colors = ['#6a93b0', '#7a9e7e', '#c97a7e', '#d8b068', '#6a8cb0', '#9b82c3', '#c982a3', '#d99368'];\n\n        // ============================================================\n        // \u2605 \u5171\u7528\uff1a\u65b0\u5efa\u6587\u4ef6\u5939\u5f39\u7a97 & \u79fb\u52a8\u5f39\u7a97\n        // ============================================================\n        let _mkdirContext = null; // { tree, onDone }\n        let _moveContext  = null; // { tree, getItems, setFolder, getBreadcrumbEl, getContainerEl, render }\n        let _moveSelected = 'root';\n\n        function openMkdirModal(tree, onDone) {\n            _mkdirContext = { tree, onDone };\n            const hint = document.getElementById('mkdir-hint');\n            const cur = tree.getFolderById(tree.currentId);\n            hint.innerText = '\u5728\u300c' + (cur ? cur.name : '\u5168\u90e8') + '\u300d\u4e0b\u65b0\u5efa\u6587\u4ef6\u5939';\n            document.getElementById('mkdir-input').value = '';\n            openModal('mkdir-modal');\n        }\n        function mkdirConfirm() {\n            if (!_mkdirContext) return;\n            const name = document.getElementById('mkdir-input').value.trim();\n            if (!name) return showToast('\u540d\u79f0\u4e0d\u80fd\u4e3a\u7a7a\uff01', 'error');\n            const { tree, onDone } = _mkdirContext;\n            // \u68c0\u67e5\u540c\u7ea7\u91cd\u540d\n            const siblings = tree.children(tree.currentId);\n            if (siblings.find(f => f.name === name)) return showToast('\u540c\u7ea7\u5df2\u6709\u540c\u540d\u6587\u4ef6\u5939\uff01', 'error');\n            tree.mkFolder(name, tree.currentId);\n            closeModal('mkdir-modal');\n            showToast('\u5df2\u521b\u5efa\u6587\u4ef6\u5939\uff1a' + name);\n            onDone();\n        }\n\n        function openMoveTreeModal(context) {\n            _moveContext = context;\n            _moveSelected = context.tree.currentId === 'root' ? 'root' : context.tree.currentId;\n            renderMoveTree();\n            openModal('move-modal');\n        }\n        function renderMoveTree() {\n            if (!_moveContext) return;\n            const list = document.getElementById('move-tree-list');\n            list.innerHTML = '';\n            // \u83b7\u53d6\u9009\u4e2d\u9879\u7684 id\uff08\u8981\u8df3\u8fc7\u5b83\u4eec\u53ca\u5176\u540e\u4ee3\uff09\n            const selectedItems = _moveContext.getSelectedItems();\n            const skipFolderIds = selectedItems\n                .filter(item => item._isFolder)\n                .flatMap(item => _moveContext.tree.descendants(item.id));\n            const flat = _moveContext.tree.flatTree(skipFolderIds);\n            flat.forEach(f => {\n                const li = document.createElement('li');\n                const btn = document.createElement('button');\n                btn.className = 'folder-tree-item' + (f.id === _moveSelected ? ' selected' : '');\n                const indent = document.createElement('span');\n                indent.className = 'indent';\n                indent.style.paddingLeft = (f.depth * 14) + 'px';\n                btn.appendChild(indent);\n                btn.appendChild(document.createTextNode((f.id === 'root' ? '\ud83c\udfe0 ' : '\ud83d\udcc1 ') + f.name));\n                btn.onclick = () => {\n                    _moveSelected = f.id;\n                    list.querySelectorAll('.folder-tree-item').forEach(b => b.classList.remove('selected'));\n                    btn.classList.add('selected');\n                };\n                li.appendChild(btn);\n                list.appendChild(li);\n            });\n        }\n        function confirmMove() {\n            if (!_moveContext) return closeModal('move-modal');\n            const targetId = _moveSelected;\n            _moveContext.doMove(targetId);\n            closeModal('move-modal');\n        }\n\n        // ============================================================\n        // \u2605 \u901a\u7528\uff1a\u6e32\u67d3\u9762\u5305\u5c51\n        // ============================================================\n        let _jumpContext = null;\n        function openJumpModal(tree, onNavigate) {\n            _jumpContext = { tree, onNavigate };\n            const list = document.getElementById('jump-tree-list');\n            list.innerHTML = '';\n            const flat = tree.flatTree([]);\n            flat.forEach(f => {\n                const li = document.createElement('li');\n                const btn = document.createElement('button');\n                btn.className = 'folder-tree-item' + (f.id === tree.currentId ? ' selected' : '');\n                const indent = document.createElement('span');\n                indent.className = 'indent';\n                indent.style.paddingLeft = (f.depth * 14) + 'px';\n                btn.appendChild(indent);\n                btn.appendChild(document.createTextNode((f.id === 'root' ? '\ud83c\udfe0 ' : '\ud83d\udcc1 ') + f.name));\n                btn.onclick = () => {\n                    tree.currentId = f.id;\n                    closeModal('jump-modal');\n                    onNavigate();\n                };\n                li.appendChild(btn);\n                list.appendChild(li);\n            });\n            openModal('jump-modal');\n        }\n\n        function renderBreadcrumb(tree, containerId, onNavigate) {\n            const el = document.getElementById(containerId);\n            el.innerHTML = '';\n            el.style.cursor = 'pointer';\n            const path = tree.path(tree.currentId);\n\n            // \u6574\u6761\u680f\u70b9\u51fb\u7a7a\u767d = \u5f39\u8df3\u8f6c\uff08\u6392\u9664\u6309\u94ae\u672c\u8eab\u5192\u6ce1\uff09\n            el.onclick = (e) => {\n                if (e.target === el) openJumpModal(tree, onNavigate);\n            };\n\n            // \u6839\u8282\u70b9\u2014\u2014\u70b9\u51fb\u5f39\u8df3\u8f6c\n            const rootBtn = document.createElement('button');\n            rootBtn.className = 'breadcrumb-item' + (tree.currentId === 'root' ? ' active' : '');\n            rootBtn.innerHTML = '\ud83c\udfe0 \u5168\u90e8';\n            rootBtn.onclick = (e) => { e.stopPropagation(); openJumpModal(tree, onNavigate); };\n            el.appendChild(rootBtn);\n\n            path.forEach((f, i) => {\n                const sep = document.createElement('span');\n                sep.className = 'breadcrumb-sep';\n                sep.innerHTML = ' \u203a ';\n                el.appendChild(sep);\n\n                const btn = document.createElement('button');\n                const isLast = (i === path.length - 1);\n                btn.className = 'breadcrumb-item' + (isLast ? ' active' : '');\n                btn.textContent = f.name;\n                if (!isLast) {\n                    btn.onclick = (e) => { e.stopPropagation(); tree.currentId = f.id; onNavigate(); };\n                } else {\n                    btn.onclick = (e) => { e.stopPropagation(); openJumpModal(tree, onNavigate); };\n                }\n                el.appendChild(btn);\n            });\n\n            // \u975e\u6839\u76ee\u5f55\u65f6\u663e\u793a\u5220\u9664\u6587\u4ef6\u5939\u6309\u94ae\n            if (tree.currentId !== 'root') {\n                const sep = document.createElement('span');\n                sep.className = 'breadcrumb-sep';\n                sep.innerHTML = '&nbsp;&nbsp;';\n                el.appendChild(sep);\n                const delBtn = document.createElement('button');\n                delBtn.className = 'breadcrumb-item';\n                delBtn.style.cssText = 'color:var(--accent-red);font-size:12px;';\n                delBtn.innerHTML = '\ud83d\uddd1 \u5220\u9664\u6b64\u6587\u4ef6\u5939';\n                delBtn.onclick = (e) => { e.stopPropagation(); onNavigate('delete'); };\n                el.appendChild(delBtn);\n            }\n\n            // \u53f3\u4fa7\u7a7a\u767d\u533a\u8865\u5145\u4e00\u4e2a\u900f\u660e\u53ef\u70b9\u533a\u57df\u6491\u6ee1\u5269\u4f59\u7a7a\u95f4\n            const filler = document.createElement('span');\n            filler.style.cssText = 'flex:1;min-width:20px;display:inline-block;';\n            filler.onclick = () => openJumpModal(tree, onNavigate);\n            el.appendChild(filler);\n        }\n\n        // ============================================================\n        // \u2605 \u901a\u7528\u5927\u5c0f\u5f39\u7a97\uff08\u89d2\u8272\u5361 / \u7f8e\u5316 / \u4e16\u754c\u4e66\u5171\u7528\uff09\n        // ============================================================\n        let _genericColsContext = null; // { containerId, state }\n        let cardsCols = 3, themesCols = 2, loreCols = 3;\n\n        function openGenericSizeModal(containerId, currentCols, onSet) {\n            _genericColsContext = { containerId, currentCols, onSet };\n            [2,3,4].forEach(n => {\n                const btn = document.getElementById('gcol-' + n);\n                if (btn) btn.className = 'btn ' + (n === currentCols ? '' : 'btn-secondary');\n            });\n            openModal('generic-size-modal');\n        }\n        function genericSetCols(n) {\n            if (!_genericColsContext) return;\n            const { containerId, onSet } = _genericColsContext;\n            const el = document.getElementById(containerId);\n            if (el) el.style.gridTemplateColumns = 'repeat(' + n + ',1fr)';\n            onSet(n);\n            [2,3,4].forEach(i => {\n                const btn = document.getElementById('gcol-' + i);\n                if (btn) btn.className = 'btn ' + (i === n ? '' : 'btn-secondary');\n            });\n            closeModal('generic-size-modal');\n        }\n        function cardsOpenSizeModal() {\n            openGenericSizeModal('card-container', cardsCols, n => {\n                cardsCols = n;\n                // \u8986\u76d6 CSS class \u7684\u9ed8\u8ba4\u5217\u6570\n                document.getElementById('card-container').style.gridTemplateColumns = 'repeat(' + n + ',1fr)';\n            });\n        }\n        function themesOpenSizeModal() {\n            openGenericSizeModal('theme-card-container', themesCols, n => { themesCols = n; });\n        }\n        function loreOpenSizeModal() {\n            openGenericSizeModal('lore-container', loreCols, n => {\n                loreCols = n;\n                document.getElementById('lore-container').style.gridTemplateColumns = 'repeat(' + n + ',1fr)';\n            });\n        }\n\n        function initApp() { renderCards(); }\n        function switchView(viewName) { const container = document.getElementById('card-container'); container.className = ''; container.classList.add(viewName); }\n\n        function toggleTheme() { \n            appState.isDarkMode = !appState.isDarkMode; \n            document.body.classList.toggle('dark-mode', appState.isDarkMode); \n            const sunSvg = `<svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"5\"><\/circle><line x1=\"12\" y1=\"1\" x2=\"12\" y2=\"3\"><\/line><line x1=\"12\" y1=\"21\" x2=\"12\" y2=\"23\"><\/line><line x1=\"4.22\" y1=\"4.22\" x2=\"5.64\" y2=\"5.64\"><\/line><line x1=\"18.36\" y1=\"18.36\" x2=\"19.78\" y2=\"19.78\"><\/line><line x1=\"1\" y1=\"12\" x2=\"3\" y2=\"12\"><\/line><line x1=\"21\" y1=\"12\" x2=\"23\" y2=\"12\"><\/line><line x1=\"4.22\" y1=\"19.78\" x2=\"5.64\" y2=\"18.36\"><\/line><line x1=\"18.36\" y1=\"5.64\" x2=\"19.78\" y2=\"4.22\"><\/line><\/svg>`;\n            const moonSvg = `<svg viewBox=\"0 0 24 24\"><path d=\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\"><\/path><\/svg>`;\n            ['theme-btn','theme-btn-html','theme-btn-themes','theme-btn-lore'].forEach(id => {\n                const b = document.getElementById(id);\n                if (b) b.innerHTML = appState.isDarkMode ? sunSvg : moonSvg;\n            });\n        }\n\n        function openModal(modalId) { document.getElementById(modalId).style.display = 'flex'; }\n        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }\n        window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.style.display = 'none'; }\n        \n        function showToast(msg, type = 'info') {\n            const toast = document.createElement('div');\n            toast.className = `toast ${type === 'error' ? 'error' : ''}`;\n            toast.innerText = msg;\n            document.body.appendChild(toast);\n            void toast.offsetWidth;\n            toast.classList.add('show');\n            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);\n        }\n\n        // ============================================================\n        // \u2605\u2605\u2605 \u89d2\u8272\u5361 \u903b\u8f91 \u2605\u2605\u2605\n        // ============================================================\n        function cardsMkdir() {\n            openMkdirModal(appState.tree, () => renderCards());\n        }\n        function toggleSelectAll() {\n            const cbs = document.querySelectorAll('#card-container .card-checkbox');\n            const all = Array.from(cbs).every(c => c.checked);\n            cbs.forEach(c => c.checked = !all);\n        }\n        function openMoveModal() {\n            const checked = document.querySelectorAll('#card-container .card-checkbox:checked');\n            if (!checked.length) return showToast('\u8bf7\u5148\u52fe\u9009\u5361\u7247\uff01', 'error');\n            openMoveTreeModal({\n                tree: appState.tree,\n                getSelectedItems: () => Array.from(checked).map(cb => appState.cards.find(c => c.id === cb.dataset.id)).filter(Boolean),\n                doMove: (targetId) => {\n                    checked.forEach(cb => {\n                        const c = appState.cards.find(x => x.id === cb.dataset.id);\n                        if (c) c.folderId = targetId;\n                    });\n                    renderCards();\n                    showToast('\u5df2\u79fb\u52a8 ' + checked.length + ' \u5f20\u5361\u7247');\n                }\n            });\n        }\n        function deleteSelectedCards() {\n            const checked = document.querySelectorAll('#card-container .card-checkbox:checked');\n            if (!checked.length) return showToast('\u8bf7\u5148\u52fe\u9009\u5361\u7247\uff01', 'error');\n            if (confirm('\u786e\u5b9a\u5220\u9664\u9009\u4e2d\u7684 ' + checked.length + ' \u5f20\u5361\u7247\uff1f')) {\n                const ids = Array.from(checked).map(cb => cb.dataset.id);\n                appState.cards = appState.cards.filter(c => !ids.includes(c.id));\n                renderCards();\n                showToast('\u5df2\u5220\u9664 ' + ids.length + ' \u5f20', 'error');\n            }\n        }\n        function copyModalDesc() {\n            const text = document.getElementById('modal-body').innerText;\n            navigator.clipboard.writeText(text).then(() => showToast('\u4eba\u8bbe\u5df2\u590d\u5236\u5230\u526a\u8d34\u677f \u2713')).catch(() => {\n                const ta = document.createElement('textarea');\n                ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';\n                document.body.appendChild(ta); ta.select(); document.execCommand('copy');\n                ta.remove(); showToast('\u4eba\u8bbe\u5df2\u590d\u5236\u5230\u526a\u8d34\u677f \u2713');\n            });\n        }\n\n        function renderCards() {\n            // \u9762\u5305\u5c51\n            renderBreadcrumb(appState.tree, 'cards-breadcrumb', (action) => {\n                if (action === 'delete') deleteCurrentFolderCards();\n                else renderCards();\n            });\n            const container = document.getElementById('card-container');\n            container.innerHTML = '';\n            const curId = appState.tree.currentId;\n\n            // \u5b50\u6587\u4ef6\u5939\n            const subFolders = appState.tree.children(curId);\n            subFolders.forEach(folder => {\n                const card = document.createElement('div');\n                card.className = 'folder-card';\n\n                // \u5220\u9664\u6309\u94ae\n                const delBtn = document.createElement('button');\n                delBtn.className = 'folder-card-del';\n                delBtn.innerHTML = '\u2715';\n                delBtn.onclick = (e) => { e.stopPropagation(); deleteFolderNode(folder.id, appState.tree, renderCards); };\n\n                const icon = document.createElement('div');\n                icon.className = 'folder-icon';\n                icon.innerHTML = '\ud83d\udcc1';\n\n                const name = document.createElement('div');\n                name.className = 'card-name';\n                name.textContent = folder.name;\n\n                card.appendChild(delBtn);\n                card.appendChild(icon);\n                card.appendChild(name);\n                card.onclick = () => { appState.tree.currentId = folder.id; renderCards(); };\n                container.appendChild(card);\n            });\n\n            // \u5f53\u524d\u6587\u4ef6\u5939\u7684\u5361\u7247\n            const visibleCards = appState.cards.filter(c => c.folderId === curId);\n            if (subFolders.length === 0 && visibleCards.length === 0) {\n                container.innerHTML = '<p style=\"text-align:center;width:100%;color:var(--text-muted);padding:40px 20px;\">\u5f53\u524d\u6587\u4ef6\u5939\u4e3a\u7a7a\uff0c\u70b9\u51fb\u300c\u5bfc\u5165\u5361\u7247\u300d\u6216\u300c\u65b0\u5efa\u6587\u4ef6\u5939\u300d\u5f00\u59cb<\/p>';\n                return;\n            }\n            visibleCards.forEach(card => {\n                const cardEl = document.createElement('div');\n                cardEl.className = 'card';\n                cardEl.onclick = () => {\n                    document.getElementById('modal-title').innerText = card.name;\n                    document.getElementById('modal-body').innerText = card.description;\n                    openModal('character-modal');\n                };\n                const avatarHtml = card.imageUrl\n                    ? `<img src=\"${card.imageUrl}\" class=\"image-avatar\" alt=\"Avatar\">`\n                    : `<div class=\"text-avatar\" style=\"color:${card.color}\">${card.initial}<\/div>`;\n                cardEl.innerHTML = `\n                    <input type=\"checkbox\" class=\"card-checkbox\" data-id=\"${card.id}\" onclick=\"event.stopPropagation()\">\n                    ${avatarHtml}\n                    <div class=\"card-info\"><h4 class=\"card-name\">${card.name}<\/h4><\/div>`;\n                container.appendChild(cardEl);\n            });\n        }\n\n        function deleteFolderNode(folderId, tree, rerender) {\n            const f = tree.getFolderById(folderId);\n            if (!f) return;\n            if (!confirm('\u5220\u9664\u6587\u4ef6\u5939\u300c' + f.name + '\u300d\uff1f\\n\u5176\u4e2d\u6240\u6709\u5185\u5bb9\u4f1a\u79fb\u81f3\u7236\u6587\u4ef6\u5939\u3002')) return;\n            const parentId = f.parentId || 'root';\n            // \u628a\u5b50\u6587\u4ef6\u5939\u7684\u7236\u6539\u4e3a\u88ab\u5220\u6587\u4ef6\u5939\u7684\u7236\n            tree.folders.forEach(x => { if (x.parentId === folderId) x.parentId = parentId; });\n            // \u628a\u5361\u7247\u7684 folderId \u6539\u4e3a\u7236\n            if (appState.cards) appState.cards.forEach(c => { if (c.folderId === folderId) c.folderId = parentId; });\n            if (htmlState.tools) htmlState.tools.forEach(t => { if (t.folderId === folderId) t.folderId = parentId; });\n            tree.folders = tree.folders.filter(x => x.id !== folderId);\n            if (tree.currentId === folderId) tree.currentId = parentId;\n            rerender();\n            showToast('\u6587\u4ef6\u5939\u5df2\u5220\u9664\uff0c\u5185\u5bb9\u5df2\u4e0a\u79fb', 'error');\n        }\n\n        function deleteCurrentFolderCards() {\n            deleteFolderNode(appState.tree.currentId, appState.tree, renderCards);\n        }\n\n        // ==========================================\n        // \u2605\u2605\u2605 \u6838\u5fc3\u5e95\u5c42\uff1aPNG \u89e3\u6790\u529f\u80fd\uff08\u9632\u5f39\u7248\uff09\u2605\u2605\u2605\n        // ==========================================\n        function parsePngChunk(arrayBuffer) {\n            try {\n                const dataView = new DataView(arrayBuffer);\n                const uint8Array = new Uint8Array(arrayBuffer);\n\n                // \u6821\u9a8c PNG \u5934\n                if (uint8Array[0] !== 0x89 || uint8Array[1] !== 0x50 || uint8Array[2] !== 0x4E || uint8Array[3] !== 0x47) return null;\n\n                let offset = 8;\n                while (offset < uint8Array.length) {\n                    if (offset + 8 > uint8Array.length) break;\n                    const length = dataView.getUint32(offset); offset += 4;\n                    const type = String.fromCharCode(uint8Array[offset], uint8Array[offset+1], uint8Array[offset+2], uint8Array[offset+3]); offset += 4;\n\n                    if (type === 'tEXt' || type === 'iTXt') {\n                        const chunkData = new Uint8Array(arrayBuffer, offset, length);\n                        const nullIndex = chunkData.indexOf(0);\n                        \n                        if (nullIndex !== -1) {\n                            const keyword = new TextDecoder().decode(chunkData.slice(0, nullIndex));\n                            if (keyword === 'chara' || keyword === 'ccv3' || keyword === 'TavernAI') {\n                                let textData;\n                                if (type === 'iTXt') {\n                                    let nullCount = 0; let textStart = nullIndex + 1;\n                                    for (let i = textStart; i < chunkData.length; i++) {\n                                        if (chunkData[i] === 0) { nullCount++; if (nullCount === 3) { textStart = i + 1; break; } }\n                                    }\n                                    textData = chunkData.slice(textStart);\n                                } else { textData = chunkData.slice(nullIndex + 1); }\n\n                                const encodedText = new TextDecoder('utf-8').decode(textData);\n\n                                // \u591a\u7ea7\u964d\u7ea7\u89e3\u6790\u4fdd\u62a4\n                                try { return JSON.parse(encodedText); } catch(e1) {}\n                                try {\n                                    const cleanStr = encodedText.replace(/[^A-Za-z0-9+/=]/g, '');\n                                    const binString = window.atob(cleanStr);\n                                    try {\n                                        const bytes = new Uint8Array(binString.length);\n                                        for (let i = 0; i < binString.length; i++) bytes[i] = binString.charCodeAt(i);\n                                        return JSON.parse(new TextDecoder('utf-8').decode(bytes));\n                                    } catch (e2) { return JSON.parse(decodeURIComponent(escape(binString))); }\n                                } catch(e3) { return null; }\n                            }\n                        }\n                    }\n                    offset += length + 4;\n                }\n            } catch (error) { console.error(\"\u89e3\u6790\u56fe\u7247\u65f6\u53d1\u751f\u9519\u8bef:\", error); }\n            return null;\n        }\n\n        // ==========================================\n        // \u2605 \u5bfc\u5165\u6838\u5fc3\u903b\u8f91\uff1a\u81ea\u52a8\u533a\u5206 JSON \u548c PNG \u2605\n        // ==========================================\n        document.getElementById('file-upload').addEventListener('change', async function(event) {\n            const files = event.target.files;\n            if (files.length === 0) return;\n            openModal('loading-modal');\n\n            const promises = Array.from(files).map(file => {\n                return new Promise(resolve => {\n                    if (file.name.toLowerCase().endsWith('.json')) {\n                        const reader = new FileReader();\n                        reader.onload = function(e) {\n                            try {\n                                const jsonData = JSON.parse(e.target.result);\n                                addCardData(jsonData, null);\n                                showToast('\u5df2\u5bfc\u5165: ' + file.name.replace(/\\.json$/i,''));\n                            } catch (err) { showToast('JSON\u89e3\u6790\u5931\u8d25: ' + file.name, 'error'); }\n                            resolve();\n                        };\n                        reader.onerror = () => resolve();\n                        reader.readAsText(file);\n                    } \n                    else if (file.name.toLowerCase().endsWith('.png')) {\n                        const reader = new FileReader();\n                        reader.readAsArrayBuffer(file);\n                        reader.onload = function(e) {\n                            const jsonData = parsePngChunk(e.target.result);\n                            if (jsonData) {\n                                const imageUrl = URL.createObjectURL(file);\n                                addCardData(jsonData, imageUrl);\n                                showToast('\u5df2\u5bfc\u5165: ' + file.name.replace(/\\.png$/i,''));\n                            } else {\n                                showToast('\u6b64PNG\u4e0d\u542b\u89d2\u8272\u6570\u636e: ' + file.name, 'error');\n                            }\n                            resolve();\n                        };\n                        reader.onerror = () => resolve();\n                    }\n                    else if (file.name.toLowerCase().endsWith('.txt')) {\n                        const reader = new FileReader();\n                        reader.onload = function(e) {\n                            const text = e.target.result.trim();\n                            const name = file.name.replace(/\\.txt$/i, '');\n                            addCardData({ name: name, description: text }, null);\n                            showToast('\u5df2\u5bfc\u5165: ' + name);\n                            resolve();\n                        };\n                        reader.onerror = () => resolve();\n                        reader.readAsText(file, 'UTF-8');\n                    }\n                    else if (file.name.toLowerCase().endsWith('.docx')) {\n                        const reader = new FileReader();\n                        reader.onload = function(e) {\n                            mammoth.extractRawText({ arrayBuffer: e.target.result })\n                                .then(result => {\n                                    const text = result.value.trim();\n                                    const name = file.name.replace(/\\.docx$/i, '');\n                                    addCardData({ name: name, description: text }, null);\n                                    showToast('\u5df2\u5bfc\u5165: ' + name);\n                                    resolve();\n                                })\n                                .catch(() => { showToast('DOCX\u89e3\u6790\u5931\u8d25: ' + file.name, 'error'); resolve(); });\n                        };\n                        reader.onerror = () => resolve();\n                        reader.readAsArrayBuffer(file);\n                    }\n                    else {\n                        resolve();\n                    }\n                });\n            });\n\n            await Promise.all(promises);\n            event.target.value = '';\n            renderCards();\n            closeModal('loading-modal');\n            showToast(`\u5bfc\u5165\u5b8c\u6210\uff0c\u5f53\u524d\u5171 ${appState.cards.length} \u5f20\u5361\u7247`);\n        });\n\n        // \u5c06\u63d0\u53d6\u5230\u7684\u6570\u636e\u5b58\u5165\u72b6\u6001\u7ba1\u7406\u5668\n        function addCardData(jsonData, imageUrl) {\n            const charName = jsonData.name || (jsonData.data && jsonData.data.name) || \"\u672a\u77e5\u89d2\u8272\";\n            const charDesc = jsonData.description || (jsonData.data && jsonData.data.description) || \"\u6682\u65e0\u63cf\u8ff0\u3002\";\n            appState.cards.push({\n                id: 'card_' + Date.now() + '_' + Math.floor(Math.random() * 1000),\n                name: charName,\n                initial: charName.charAt(0).toUpperCase(),\n                description: charDesc,\n                color: colors[Math.floor(Math.random() * colors.length)],\n                folderId: appState.tree.currentId,\n                imageUrl: imageUrl\n            });\n        }\n\n        // ==========================================\n        // \u2605\u2605\u2605 PWA\uff1a\u52a8\u6001\u751f\u6210 Manifest + ServiceWorker \u2605\u2605\u2605\n        // ==========================================\n        let deferredInstallPrompt = null;\n\n        window.addEventListener('beforeinstallprompt', (e) => {\n            e.preventDefault();\n            deferredInstallPrompt = e;\n            // \u663e\u793a\u4e00\u952e\u5b89\u88c5\u6309\u94ae\n            document.getElementById('install-btn').style.display = 'inline-flex';\n            document.getElementById('install-prompt-btn').style.display = 'inline-flex';\n        });\n\n        window.addEventListener('appinstalled', () => {\n            deferredInstallPrompt = null;\n            document.getElementById('install-btn').style.display = 'none';\n            showToast('\u2705 \u5df2\u6210\u529f\u5b89\u88c5\u5230\u684c\u9762\uff01');\n        });\n\n        function triggerInstall() {\n            if (deferredInstallPrompt) {\n                deferredInstallPrompt.prompt();\n                deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; });\n                closeModal('install-modal');\n            } else {\n                openModal('install-modal');\n            }\n        }\n\n        async function setupPWA() {\n            // 1. \u7528 canvas \u751f\u6210\u56fe\u6807 blob\n            function makeIcon(size) {\n                return new Promise(resolve => {\n                    const c = document.createElement('canvas');\n                    c.width = c.height = size;\n                    const ctx = c.getContext('2d');\n                    const r = size * 0.22;\n                    ctx.fillStyle = '#6a93b0';\n                    ctx.beginPath();\n                    ctx.moveTo(r, 0); ctx.lineTo(size - r, 0);\n                    ctx.quadraticCurveTo(size, 0, size, r);\n                    ctx.lineTo(size, size - r);\n                    ctx.quadraticCurveTo(size, size, size - r, size);\n                    ctx.lineTo(r, size);\n                    ctx.quadraticCurveTo(0, size, 0, size - r);\n                    ctx.lineTo(0, r);\n                    ctx.quadraticCurveTo(0, 0, r, 0);\n                    ctx.closePath(); ctx.fill();\n                    ctx.fillStyle = 'white';\n                    ctx.font = `bold ${Math.floor(size * 0.44)}px serif`;\n                    ctx.textAlign = 'center';\n                    ctx.textBaseline = 'middle';\n                    ctx.fillText('\u5361', size / 2, size / 2 + size * 0.03);\n                    c.toBlob(resolve, 'image/png');\n                });\n            }\n\n            try {\n                const [blob192, blob512] = await Promise.all([makeIcon(192), makeIcon(512)]);\n                const url192 = URL.createObjectURL(blob192);\n                const url512 = URL.createObjectURL(blob512);\n\n                // 2. \u521b\u5efa manifest blob\n                const manifest = {\n                    name: 'SillyTavern \u5361\u7247\u6574\u7406\u5de5\u5177',\n                    short_name: '\u89d2\u8272\u5361\u7247',\n                    description: '\u672c\u5730\u89d2\u8272\u5361\u7247\u6574\u7406\u4e0e\u7ba1\u7406\u5de5\u5177',\n                    start_url: window.location.href,\n                    scope: window.location.href,\n                    display: 'standalone',\n                    orientation: 'any',\n                    background_color: '#eaf0f6',\n                    theme_color: '#6a93b0',\n                    icons: [\n                        { src: url192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },\n                        { src: url512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }\n                    ]\n                };\n                const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });\n                const manifestLink = document.createElement('link');\n                manifestLink.rel = 'manifest';\n                manifestLink.href = URL.createObjectURL(manifestBlob);\n                document.head.appendChild(manifestLink);\n            } catch(e) { console.log('Manifest setup skipped:', e); }\n\n            // 3. \u6ce8\u518c ServiceWorker\uff08blob URL \u6280\u5de7\uff09\n            if ('serviceWorker' in navigator) {\n                const swCode = `\n                    const CACHE_NAME = 'card-tool-v1';\n                    self.addEventListener('install', () => self.skipWaiting());\n                    self.addEventListener('activate', e => e.waitUntil(clients.claim()));\n                    self.addEventListener('fetch', e => {\n                        e.respondWith(fetch(e.request).catch(() => new Response('', { status: 503 })));\n                    });\n                `;\n                try {\n                    const swBlob = new Blob([swCode], { type: 'text/javascript' });\n                    await navigator.serviceWorker.register(URL.createObjectURL(swBlob));\n                } catch(e) { console.log('SW registration skipped:', e); }\n            }\n        }\n\n        // ============================================================\n        // \u2605\u2605\u2605 HTML\u5de5\u5177 \u5b8c\u6574\u903b\u8f91 \u2605\u2605\u2605\n        // ============================================================\n        // htmlState \u5df2\u5728\u4e0a\u65b9 appState \u533a\u5757\u5b9a\u4e49\n\n        // \u5224\u65ad\u662f\u5426\u662f DOCX\uff08ZIP magic bytes: PK\\x03\\x04\uff09\n        async function isDocxFile(file) {\n            if (/\\.(docx|doc)$/i.test(file.name)) return true;\n            // \u65e0\u6269\u5c55\u540d\u65f6\u8bfb magic bytes\n            try {\n                const buf = await file.slice(0, 4).arrayBuffer();\n                const bytes = new Uint8Array(buf);\n                // PK zip header = 50 4B 03 04\n                return bytes[0] === 0x50 && bytes[1] === 0x4B && bytes[2] === 0x03 && bytes[3] === 0x04;\n            } catch { return false; }\n        }\n\n        function extractHtmlFromText(raw) {\n            // docx \u7ecf mammoth \u63d0\u53d6\u540e\uff0c< > \u53ef\u80fd\u88ab\u8f6c\u4e49\u4e3a \\< \\>\uff0c\u5148\u8fd8\u539f\n            let text = raw.replace(/\\\\<\/g, '<').replace(/\\\\>/g, '>');\n            // \u540c\u65f6\u5904\u7406\u53ef\u80fd\u7684 HTML \u5b9e\u4f53\n            text = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');\n\n            // \u4f18\u5148\u627e\u5b8c\u6574\u6587\u6863\u8d77\u70b9\n            const patterns = [\n                /<!DOCTYPE\\s+html/i,\n                /<html[\\s>]/i,\n                // \u6709\u4e9b\u4e16\u754c\u4e66\u53ea\u6709 <div ... style= \u8fd9\u79cd\u7247\u6bb5\u5165\u53e3\uff0c\u4e5f\u5c1d\u8bd5\u5339\u914d\n                /<div\\s[^>]*style\\s*=/i,\n                /<style[\\s>]/i,\n            ];\n            let startIdx = -1;\n            for (const pat of patterns) {\n                const m = text.search(pat);\n                if (m !== -1 && (startIdx === -1 || m < startIdx)) startIdx = m;\n            }\n            if (startIdx === -1) return null; // \u5b8c\u5168\u627e\u4e0d\u5230 HTML\uff0c\u8fd4\u56de null\n            return text.slice(startIdx);\n        }\n\n        // --- \u5bfc\u5165 ---\n        document.getElementById('html-file-upload').addEventListener('change', async function(e) {\n            const files = e.target.files;\n            if (!files.length) return;\n            for (const file of files) {\n                const name = file.name.replace(/\\.(docx|doc|dox|txt|json)$/i, '') || file.name;\n                const ext = file.name.split('.').pop().toLowerCase();\n                try {\n                    let htmlContent = null;\n\n                    if (ext === 'json') {\n                        // JSON\uff1a\u5c1d\u8bd5\u63d0\u53d6 replacePattern\uff08ST\u72b6\u6001\u680f\u9884\u8bbe\u683c\u5f0f\uff09\u6216\u5176\u4ed6\u542bHTML\u7684\u5b57\u6bb5\n                        const text = await file.text();\n                        try {\n                            const jsonData = JSON.parse(text);\n                            // \u4f18\u5148\u627e\u542bHTML\u7684\u5b57\u6bb5\n                            const htmlFields = ['replacePattern', 'content', 'html', 'template', 'value'];\n                            for (const field of htmlFields) {\n                                if (jsonData[field] && typeof jsonData[field] === 'string') {\n                                    const extracted = extractHtmlFromText(jsonData[field]);\n                                    if (extracted) { htmlContent = extracted; break; }\n                                }\n                            }\n                            // items \u6570\u7ec4\u91cc\u627e\n                            if (!htmlContent && jsonData.items && Array.isArray(jsonData.items)) {\n                                for (const item of jsonData.items) {\n                                    for (const field of htmlFields) {\n                                        if (item[field]) {\n                                            const extracted = extractHtmlFromText(String(item[field]));\n                                            if (extracted) { htmlContent = extracted; break; }\n                                        }\n                                    }\n                                    if (htmlContent) break;\n                                }\n                            }\n                            // \u627e\u4e0d\u5230HTML\u5c31\u628a\u6574\u4e2ajson\u683c\u5f0f\u5316\u5c55\u793a\n                            if (!htmlContent) {\n                                htmlContent = '<pre style=\"white-space:pre-wrap;word-break:break-all;font-size:13px;line-height:1.6;\">' +\n                                    JSON.stringify(jsonData, null, 2).replace(/<\/g,'&lt;').replace(/>/g,'&gt;') + '<\/pre>';\n                            }\n                        } catch {\n                            // \u975e\u6cd5json\u5f53\u7eaf\u6587\u672c\n                            htmlContent = '<pre style=\"white-space:pre-wrap;font-size:13px;\">' + text.replace(/<\/g,'&lt;').replace(/>/g,'&gt;') + '<\/pre>';\n                        }\n\n                    } else if (ext === 'dox' || ext === 'docx' || ext === 'doc') {\n                        const arrayBuffer = await file.arrayBuffer();\n                        const result = await mammoth.extractRawText({ arrayBuffer });\n                        htmlContent = extractHtmlFromText(result.value);\n\n                    } else {\n                        // txt \u53ca\u5176\u4ed6\u6587\u672c\u683c\u5f0f\n                        const text = await file.text();\n                        htmlContent = extractHtmlFromText(text);\n                    }\n\n                    if (!htmlContent) { showToast('\u672a\u627e\u5230 HTML \u5185\u5bb9: ' + name, 'error'); continue; }\n                    const id = 'ht_' + Date.now() + '_' + Math.random().toString(36).slice(2);\n                    htmlState.tools.push({ id, name, htmlContent, folderId: htmlState.tree.currentId });\n                    showToast('\u5df2\u5bfc\u5165: ' + name);\n                } catch(err) {\n                    showToast('\u5bfc\u5165\u5931\u8d25: ' + file.name, 'error');\n                    console.error(err);\n                }\n            }\n            e.target.value = '';\n            renderHtmlCards();\n        });\n\n        // --- HTML \u6587\u4ef6\u5939 ---\n        function htmlMkdir() {\n            openMkdirModal(htmlState.tree, () => renderHtmlCards());\n        }\n        function htmlToggleSelectAll() {\n            const cbs = document.querySelectorAll('#html-card-container .html-cb');\n            const all = Array.from(cbs).every(c => c.checked);\n            cbs.forEach(c => c.checked = !all);\n        }\n        function htmlOpenMoveModal() {\n            const checked = document.querySelectorAll('#html-card-container .html-cb:checked');\n            if (!checked.length) return showToast('\u8bf7\u5148\u52fe\u9009\u5361\u7247\uff01', 'error');\n            openMoveTreeModal({\n                tree: htmlState.tree,\n                getSelectedItems: () => Array.from(checked).map(cb => htmlState.tools.find(t => t.id === cb.dataset.id)).filter(Boolean),\n                doMove: (targetId) => {\n                    checked.forEach(cb => {\n                        const t = htmlState.tools.find(x => x.id === cb.dataset.id);\n                        if (t) t.folderId = targetId;\n                    });\n                    renderHtmlCards();\n                    showToast('\u5df2\u79fb\u52a8 ' + checked.length + ' \u5f20\u5361\u7247');\n                }\n            });\n        }\n        function htmlDeleteSelected() {\n            const checked = document.querySelectorAll('#html-card-container .html-cb:checked');\n            if (!checked.length) return showToast('\u8bf7\u5148\u52fe\u9009\u5361\u7247\uff01', 'error');\n            if (confirm('\u786e\u5b9a\u5220\u9664\u9009\u4e2d\u7684 ' + checked.length + ' \u5f20\u5361\u7247\uff1f')) {\n                const ids = Array.from(checked).map(cb => cb.dataset.id);\n                htmlState.tools = htmlState.tools.filter(t => !ids.includes(t.id));\n                renderHtmlCards();\n                showToast('\u5df2\u5220\u9664 ' + ids.length + ' \u5f20', 'error');\n            }\n        }\n\n        // --- \u5217\u6570\u63a7\u5236 ---\n        let htmlCols = 2;\n        function htmlSetCols(n) {\n            htmlCols = n;\n            document.getElementById('html-card-container').style.gridTemplateColumns = 'repeat(' + n + ',1fr)';\n            [2,3,4].forEach(i => {\n                const btn = document.getElementById('html-col-btn-' + i);\n                if (btn) btn.className = 'btn ' + (i === n ? '' : 'btn-secondary');\n            });\n            closeModal('html-size-modal');\n        }\n        function htmlOpenSizeModal() {\n            [2,3,4].forEach(i => {\n                const btn = document.getElementById('html-col-btn-' + i);\n                if (btn) btn.className = 'btn ' + (i === htmlCols ? '' : 'btn-secondary');\n            });\n            openModal('html-size-modal');\n        }\n\n        // --- \u6e32\u67d3 HTML \u5361\u7247\uff08\u542b\u5b50\u6587\u4ef6\u5939\uff0c\u957f\u6309=\u9884\u89c8\uff0c\u5355\u51fb=\u52fe\u9009\uff09---\n        function renderHtmlCards() {\n            renderBreadcrumb(htmlState.tree, 'html-breadcrumb', (action) => {\n                if (action === 'delete') deleteFolderNode(htmlState.tree.currentId, htmlState.tree, renderHtmlCards);\n                else renderHtmlCards();\n            });\n            const container = document.getElementById('html-card-container');\n            container.innerHTML = '';\n            container.style.gridTemplateColumns = 'repeat(' + htmlCols + ',1fr)';\n            const curId = htmlState.tree.currentId;\n\n            // \u5b50\u6587\u4ef6\u5939\n            const subFolders = htmlState.tree.children(curId);\n            subFolders.forEach(folder => {\n                const card = document.createElement('div');\n                card.className = 'folder-card';\n                card.style.cssText = 'user-select:none;-webkit-user-select:none;';\n\n                const delBtn = document.createElement('button');\n                delBtn.className = 'folder-card-del';\n                delBtn.innerHTML = '\u2715';\n                delBtn.onclick = (e) => { e.stopPropagation(); deleteFolderNode(folder.id, htmlState.tree, renderHtmlCards); };\n\n                const icon = document.createElement('div');\n                icon.className = 'folder-icon';\n                icon.innerHTML = '\ud83d\udcc1';\n\n                const name = document.createElement('div');\n                name.className = 'card-name';\n                name.textContent = folder.name;\n\n                card.appendChild(delBtn);\n                card.appendChild(icon);\n                card.appendChild(name);\n                card.onclick = () => { htmlState.tree.currentId = folder.id; renderHtmlCards(); };\n                container.appendChild(card);\n            });\n\n            // \u5f53\u524d\u6587\u4ef6\u5939\u7684 tool \u5361\n            const visible = htmlState.tools.filter(t => t.folderId === curId);\n            if (subFolders.length === 0 && visible.length === 0) {\n                container.style.gridTemplateColumns = '';\n                container.innerHTML = '<p style=\"text-align:center;width:100%;color:var(--text-muted);padding:40px 20px;\">\u5f53\u524d\u6587\u4ef6\u5939\u4e3a\u7a7a\uff0c\u70b9\u51fb\u300c\u5bfc\u5165\u300d\u6216\u300c\u65b0\u5efa\u6587\u4ef6\u5939\u300d\u5f00\u59cb<\/p>';\n                return;\n            }\n\n            visible.forEach(tool => {\n                const card = document.createElement('div');\n                card.className = 'card';\n                card.style.cssText = 'padding:10px;text-align:center;display:flex;flex-direction:column;align-items:center;overflow:hidden;position:relative;cursor:pointer;user-select:none;-webkit-user-select:none;';\n\n                const cb = document.createElement('input');\n                cb.type = 'checkbox'; cb.className = 'card-checkbox html-cb'; cb.dataset.id = tool.id;\n                cb.style.cssText = 'position:absolute;top:8px;left:8px;width:22px;height:22px;cursor:pointer;z-index:10;accent-color:var(--accent-blue);';\n                cb.onclick = e => e.stopPropagation();\n\n                const avatar = document.createElement('div');\n                avatar.className = 'text-avatar';\n                avatar.style.cssText = 'width:100%;aspect-ratio:1/1;border-radius:10px;font-size:28px;background:rgba(255,255,255,0.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.9);box-shadow:0 4px 16px rgba(31,38,135,0.06);';\n                avatar.innerText = 'H';\n\n                const nameEl = document.createElement('div');\n                nameEl.className = 'card-name';\n                nameEl.innerText = tool.name;\n\n                card.appendChild(cb); card.appendChild(avatar); card.appendChild(nameEl);\n\n                // \u957f\u6309=\u9884\u89c8\uff0c\u77ed\u6309=\u52fe\u9009\n                let pressTimer = null, moved = false;\n                const startPress = () => { moved = false; pressTimer = setTimeout(() => { if (!moved) openHtmlRender(tool); }, 500); };\n                const cancelPress = () => { clearTimeout(pressTimer); pressTimer = null; };\n                const onMove = () => { moved = true; cancelPress(); };\n                card.addEventListener('touchstart', startPress, { passive: true });\n                card.addEventListener('touchend', cancelPress);\n                card.addEventListener('touchmove', onMove, { passive: true });\n                card.addEventListener('mousedown', startPress);\n                card.addEventListener('mouseup', cancelPress);\n                card.addEventListener('mouseleave', cancelPress);\n                card.onclick = (e) => { if (e.target === cb) return; cb.checked = !cb.checked; };\n\n                container.appendChild(card);\n            });\n        }\n\n        // --- \u6e32\u67d3/\u6e90\u7801\u5f39\u7a97 ---\n        let _currentRenderTool = null;\n        function openHtmlRender(tool) {\n            _currentRenderTool = tool;\n            document.getElementById('html-render-title').innerText = tool.name;\n            document.getElementById('html-render-frame').srcdoc = tool.htmlContent;\n            openModal('html-render-modal');\n        }\n        function switchToSource() {\n            if (!_currentRenderTool) return;\n            document.getElementById('html-source-title').innerText = _currentRenderTool.name + ' \u2014 \u6e90\u6587\u4ef6';\n            document.getElementById('html-source-code').textContent = _currentRenderTool.htmlContent;\n            const btn = document.getElementById('html-source-copy-btn');\n            btn.innerHTML = '<svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"><\/rect><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"><\/path><\/svg> \u590d\u5236\u5168\u90e8';\n            btn.className = 'btn';\n            document.getElementById('html-render-modal').style.display = 'none';\n            document.getElementById('html-source-modal').style.display = 'flex';\n        }\n        function switchToRender() {\n            document.getElementById('html-source-modal').style.display = 'none';\n            document.getElementById('html-render-modal').style.display = 'flex';\n        }\n        function copyHtmlSource() {\n            if (!_currentRenderTool) return;\n            navigator.clipboard.writeText(_currentRenderTool.htmlContent).then(() => {\n                const btn = document.getElementById('html-source-copy-btn');\n                btn.innerHTML = '<svg viewBox=\"0 0 24 24\"><polyline points=\"20 6 9 17 4 12\"><\/polyline><\/svg> \u5df2\u590d\u5236\uff01';\n                btn.className = 'btn btn-secondary';\n                setTimeout(() => {\n                    btn.innerHTML = '<svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"><\/rect><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"><\/path><\/svg> \u590d\u5236\u5168\u90e8';\n                    btn.className = 'btn';\n                }, 2000);\n            }).catch(() => {\n                const ta = document.createElement('textarea');\n                ta.value = _currentRenderTool.htmlContent;\n                ta.style.cssText = 'position:fixed;opacity:0;';\n                document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();\n                showToast('\u5df2\u590d\u5236\u5230\u526a\u8d34\u677f');\n            });\n        }\n\n        function themesMkdir() { openMkdirModal(themesState.tree, () => renderThemeCards()); }\n        function themeToggleSelectAll() {\n            const cbs = document.querySelectorAll('#theme-card-container .theme-cb');\n            const all = Array.from(cbs).every(c => c.checked);\n            cbs.forEach(c => c.checked = !all);\n        }\n        function themeOpenMoveModal() {\n            const checked = document.querySelectorAll('#theme-card-container .theme-cb:checked');\n            if (!checked.length) return showToast('\u8bf7\u5148\u52fe\u9009\u5361\u7247\uff01', 'error');\n            openMoveTreeModal({\n                tree: themesState.tree,\n                getSelectedItems: () => Array.from(checked).map(cb => themesState.items.find(t => t.id === cb.dataset.id)).filter(Boolean),\n                doMove: (targetId) => {\n                    checked.forEach(cb => {\n                        const t = themesState.items.find(x => x.id === cb.dataset.id);\n                        if (t) t.folderId = targetId;\n                    });\n                    renderThemeCards();\n                    showToast('\u5df2\u79fb\u52a8 ' + checked.length + ' \u5f20');\n                }\n            });\n        }\n        function themeDeleteSelected() {\n            const checked = document.querySelectorAll('#theme-card-container .theme-cb:checked');\n            if (!checked.length) return showToast('\u8bf7\u5148\u52fe\u9009\u5361\u7247\uff01', 'error');\n            if (confirm('\u786e\u5b9a\u5220\u9664\u9009\u4e2d\u7684 ' + checked.length + ' \u5f20\uff1f')) {\n                const ids = Array.from(checked).map(cb => cb.dataset.id);\n                themesState.items = themesState.items.filter(t => !ids.includes(t.id));\n                renderThemeCards();\n                showToast('\u5df2\u5220\u9664 ' + ids.length + ' \u5f20', 'error');\n            }\n        }\n\n        // \u7f8e\u5316\u5bfc\u5165\uff08docx/doc/txt/css\uff09\n        document.getElementById('theme-file-upload').addEventListener('change', async function(e) {\n            const files = e.target.files;\n            if (!files.length) return;\n            for (const file of files) {\n                const name = file.name.replace(/\\.(docx|doc|txt|css)$/i, '') || file.name;\n                const ext = file.name.split('.').pop().toLowerCase();\n                try {\n                    let cssContent = '';\n                    if (ext === 'docx' || ext === 'doc') {\n                        const buf = await file.arrayBuffer();\n                        const result = await mammoth.extractRawText({ arrayBuffer: buf });\n                        cssContent = result.value.trim();\n                    } else {\n                        cssContent = await file.text();\n                    }\n                    if (!cssContent.trim()) { showToast('\u6587\u4ef6\u5185\u5bb9\u4e3a\u7a7a: ' + name, 'error'); continue; }\n                    const id = 'th_' + Date.now() + '_' + Math.random().toString(36).slice(2);\n                    themesState.items.push({ id, name, cssContent, folderId: themesState.tree.currentId });\n                    showToast('\u5df2\u5bfc\u5165: ' + name);\n                } catch(err) {\n                    showToast('\u5bfc\u5165\u5931\u8d25: ' + file.name, 'error');\n                    console.error(err);\n                }\n            }\n            e.target.value = '';\n            renderThemeCards();\n        });\n\n        // \u6c14\u6ce1\u9884\u89c8 HTML \u6a21\u677f\uff08\u517c\u5bb9\u5404\u79cd\u547d\u540d\u7ea6\u5b9a\uff09\n        function buildPreviewHtml(cssContent) {\n            return `<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0;}\nbody{font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;background:#f0f2f5;padding:16px 12px;min-height:100vh;}\n.chat-wrap{display:flex;flex-direction:column;gap:4px;max-width:440px;margin:0 auto;}\n\n/* --- \u7eaf\u5e03\u5c40\uff0c\u4e0d\u8bbe\u4efb\u4f55\u989c\u8272\uff0c\u5b8c\u5168\u4ea4\u7ed9\u7528\u6237CSS --- */\n.message-wrapper{display:flex;align-items:flex-end;gap:8px;position:relative;margin-bottom:4px;}\n.message-wrapper.ai,.message-wrapper.received,.message-wrapper.char{flex-direction:row;}\n.message-wrapper.user,.message-wrapper.sent,.message-wrapper.me{flex-direction:row-reverse;}\n\n.avatar{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;}\n.message-wrapper.ai .avatar,.message-wrapper.received .avatar,.message-wrapper.char .avatar{background:#b8d4f0;}\n.message-wrapper.user .avatar,.message-wrapper.sent .avatar,.message-wrapper.me .avatar{background:#f0c8d4;}\n\n.message-bubble{position:relative;max-width:75%;word-break:break-word;}\n.message-bubble .content{padding:10px 14px;font-size:14px;line-height:1.6;word-break:break-word;}\n\n/* ===== \u6ce8\u5165\u7528\u6237CSS ===== */\n${cssContent}\n<\/style><\/head><body>\n<div class=\"chat-wrap\">\n\n  <div class=\"message-wrapper ai received char\">\n    <div class=\"avatar\">\ud83e\udd16<\/div>\n    <div class=\"message-bubble ai received char\">\n      <div class=\"content\">\u4f60\u597d\uff01\u6211\u662f AI\uff0c\u5f88\u9ad8\u5174\u8ba4\u8bc6\u4f60\uff5e<\/div>\n    <\/div>\n  <\/div>\n\n  <div class=\"message-wrapper user sent me\">\n    <div class=\"avatar\">\ud83e\uddd1<\/div>\n    <div class=\"message-bubble user sent me\">\n      <div class=\"content\">\u55e8\uff01\u8fd9\u4e2a\u6c14\u6ce1\u597d\u770b\u5417\uff1f<\/div>\n    <\/div>\n  <\/div>\n\n  <div class=\"message-wrapper ai received char\">\n    <div class=\"avatar\">\ud83e\udd16<\/div>\n    <div class=\"message-bubble ai received char\">\n      <div class=\"content\">\u5f53\u7136\u597d\u770b\uff01\u8fd9\u662f\u7a0d\u5fae\u957f\u4e00\u70b9\u7684\u56de\u590d\uff0c\u7528\u6765\u770b\u6362\u884c\u548c\u95f4\u8ddd\u7684\u6548\u679c\uff0c\u4ee5\u53ca\u6c14\u6ce1\u6574\u4f53\u7684\u89c6\u89c9\u89c2\u611f\u3002<\/div>\n    <\/div>\n  <\/div>\n\n  <div class=\"message-wrapper user sent me\">\n    <div class=\"avatar\">\ud83e\uddd1<\/div>\n    <div class=\"message-bubble user sent me\">\n      <div class=\"content\">\u660e\u767d\u4e86\uff0c\u611f\u8c22\uff01<\/div>\n    <\/div>\n  <\/div>\n\n  <div class=\"message-wrapper ai received char\">\n    <div class=\"avatar\">\ud83e\udd16<\/div>\n    <div class=\"message-bubble ai received char\">\n      <div class=\"content\">\u968f\u65f6\u4e3a\u4f60\u670d\u52a1\uff0c\u6709\u4ec0\u4e48\u60f3\u804a\u7684\u5c3d\u7ba1\u8bf4\uff5e<\/div>\n    <\/div>\n  <\/div>\n\n<\/div>\n<\/body><\/html>`;\n        }\n\n        // \u6253\u5f00\u7f8e\u5316\u9884\u89c8\n        let _currentThemeTool = null;\n        function openThemeRender(tool) {\n            _currentThemeTool = tool;\n            document.getElementById('theme-render-title').innerText = tool.name;\n            document.getElementById('theme-render-frame').srcdoc = buildPreviewHtml(tool.cssContent);\n            openModal('theme-render-modal');\n        }\n        function switchThemeToSource() {\n            if (!_currentThemeTool) return;\n            document.getElementById('theme-source-title').innerText = _currentThemeTool.name + ' \u2014 \u6e90\u4ee3\u7801';\n            document.getElementById('theme-source-code').textContent = _currentThemeTool.cssContent;\n            const btn = document.getElementById('theme-source-copy-btn');\n            btn.innerHTML = '<svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"><\/rect><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"><\/path><\/svg> \u590d\u5236\u6e90\u4ee3\u7801';\n            btn.className = 'btn';\n            document.getElementById('theme-render-modal').style.display = 'none';\n            document.getElementById('theme-source-modal').style.display = 'flex';\n        }\n        function switchThemeToRender() {\n            document.getElementById('theme-source-modal').style.display = 'none';\n            document.getElementById('theme-render-modal').style.display = 'flex';\n        }\n        function copyThemeSource() {\n            if (!_currentThemeTool) return;\n            navigator.clipboard.writeText(_currentThemeTool.cssContent).then(() => {\n                const btn = document.getElementById('theme-source-copy-btn');\n                btn.innerHTML = '<svg viewBox=\"0 0 24 24\"><polyline points=\"20 6 9 17 4 12\"><\/polyline><\/svg> \u5df2\u590d\u5236\uff01';\n                btn.className = 'btn btn-secondary';\n                setTimeout(() => {\n                    btn.innerHTML = '<svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"><\/rect><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"><\/path><\/svg> \u590d\u5236\u6e90\u4ee3\u7801';\n                    btn.className = 'btn';\n                }, 2000);\n            }).catch(() => {\n                const ta = document.createElement('textarea');\n                ta.value = _currentThemeTool.cssContent;\n                ta.style.cssText = 'position:fixed;opacity:0;';\n                document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();\n                showToast('\u5df2\u590d\u5236\u5230\u526a\u8d34\u677f');\n            });\n        }\n\n        function renderThemeCards() {\n            renderBreadcrumb(themesState.tree, 'themes-breadcrumb', (action) => {\n                if (action === 'delete') deleteFolderNode(themesState.tree.currentId, themesState.tree, renderThemeCards);\n                else renderThemeCards();\n            });\n            const container = document.getElementById('theme-card-container');\n            container.style.gridTemplateColumns = 'repeat(' + themesCols + ',1fr)';\n            const curId = themesState.tree.currentId;\n            const subFolders = themesState.tree.children(curId);\n            const visible = themesState.items.filter(t => t.folderId === curId);\n\n            if (subFolders.length === 0 && visible.length === 0) {\n                container.style.gridTemplateColumns = '';\n                container.innerHTML = '<p style=\"text-align:center;width:100%;color:var(--text-muted);padding:40px 20px;grid-column:1/-1;\">\u5f53\u524d\u6587\u4ef6\u5939\u4e3a\u7a7a\uff0c\u70b9\u51fb\u300c\u5bfc\u5165\u300d\u6216\u300c\u65b0\u5efa\u6587\u4ef6\u5939\u300d\u5f00\u59cb<\/p>';\n                return;\n            }\n            container.innerHTML = '';\n            subFolders.forEach(folder => {\n                const card = document.createElement('div');\n                card.className = 'folder-card';\n                const delBtn = document.createElement('button');\n                delBtn.className = 'folder-card-del'; delBtn.innerHTML = '\u2715';\n                delBtn.onclick = (e) => { e.stopPropagation(); deleteFolderNode(folder.id, themesState.tree, renderThemeCards); };\n                const icon = document.createElement('div'); icon.className = 'folder-icon'; icon.innerHTML = '\ud83c\udfa8';\n                const name = document.createElement('div'); name.className = 'card-name'; name.textContent = folder.name;\n                card.appendChild(delBtn); card.appendChild(icon); card.appendChild(name);\n                card.onclick = () => { themesState.tree.currentId = folder.id; renderThemeCards(); };\n                container.appendChild(card);\n            });\n            visible.forEach(tool => {\n                const card = document.createElement('div');\n                card.className = 'card';\n                card.style.cssText = 'padding:10px;text-align:center;display:flex;flex-direction:column;align-items:center;overflow:hidden;position:relative;cursor:pointer;user-select:none;-webkit-user-select:none;';\n                const cb = document.createElement('input');\n                cb.type = 'checkbox'; cb.className = 'card-checkbox theme-cb'; cb.dataset.id = tool.id;\n                cb.style.cssText = 'position:absolute;top:8px;left:8px;width:22px;height:22px;cursor:pointer;z-index:10;accent-color:var(--accent-blue);';\n                cb.onclick = e => e.stopPropagation();\n                const avatar = document.createElement('div');\n                avatar.className = 'text-avatar';\n                avatar.style.cssText = 'width:100%;aspect-ratio:1/1;border-radius:10px;font-size:28px;background:rgba(255,255,255,0.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.9);box-shadow:0 4px 16px rgba(31,38,135,0.06);';\n                avatar.innerText = '\ud83c\udfa8';\n                const nameEl = document.createElement('div');\n                nameEl.className = 'card-name'; nameEl.innerText = tool.name;\n                card.appendChild(cb); card.appendChild(avatar); card.appendChild(nameEl);\n                let pressTimer = null, moved = false;\n                const startPress = () => { moved = false; pressTimer = setTimeout(() => { if (!moved) openThemeRender(tool); }, 500); };\n                const cancelPress = () => { clearTimeout(pressTimer); pressTimer = null; };\n                const onMove = () => { moved = true; cancelPress(); };\n                card.addEventListener('touchstart', startPress, { passive: true });\n                card.addEventListener('touchend', cancelPress);\n                card.addEventListener('touchmove', onMove, { passive: true });\n                card.addEventListener('mousedown', startPress);\n                card.addEventListener('mouseup', cancelPress);\n                card.addEventListener('mouseleave', cancelPress);\n                card.onclick = (e) => { if (e.target === cb) return; cb.checked = !cb.checked; };\n                container.appendChild(card);\n            });\n        }\n\n        // ============================================================\n        // \u2605\u2605\u2605 \u4e16\u754c\u4e66\u903b\u8f91\uff08\u590d\u523b\u89d2\u8272\u5361\uff09\u2605\u2605\u2605\n        // ============================================================\n        let loreViewMode = 'grid-view';\n        function switchLoreView(v) {\n            loreViewMode = v;\n            document.getElementById('lore-container').className = v;\n        }\n        function loreMkdir() { openMkdirModal(loreState.tree, () => renderLoreCards()); }\n        function loreToggleSelectAll() {\n            const cbs = document.querySelectorAll('#lore-container .card-checkbox');\n            const all = Array.from(cbs).every(c => c.checked);\n            cbs.forEach(c => c.checked = !all);\n        }\n        function loreOpenMoveModal() {\n            const checked = document.querySelectorAll('#lore-container .card-checkbox:checked');\n            if (!checked.length) return showToast('\u8bf7\u5148\u52fe\u9009\u6761\u76ee\uff01', 'error');\n            openMoveTreeModal({\n                tree: loreState.tree,\n                getSelectedItems: () => Array.from(checked).map(cb => loreState.cards.find(c => c.id === cb.dataset.id)).filter(Boolean),\n                doMove: (targetId) => {\n                    checked.forEach(cb => {\n                        const c = loreState.cards.find(x => x.id === cb.dataset.id);\n                        if (c) c.folderId = targetId;\n                    });\n                    renderLoreCards();\n                    showToast('\u5df2\u79fb\u52a8 ' + checked.length + ' \u4e2a\u6761\u76ee');\n                }\n            });\n        }\n        function loreDeleteSelected() {\n            const checked = document.querySelectorAll('#lore-container .card-checkbox:checked');\n            if (!checked.length) return showToast('\u8bf7\u5148\u52fe\u9009\u6761\u76ee\uff01', 'error');\n            if (confirm('\u786e\u5b9a\u5220\u9664\u9009\u4e2d\u7684 ' + checked.length + ' \u4e2a\u6761\u76ee\uff1f')) {\n                const ids = Array.from(checked).map(cb => cb.dataset.id);\n                loreState.cards = loreState.cards.filter(c => !ids.includes(c.id));\n                renderLoreCards();\n                showToast('\u5df2\u5220\u9664 ' + ids.length + ' \u4e2a', 'error');\n            }\n        }\n\n        // \u4e16\u754c\u4e66\u5bfc\u5165\uff08\u652f\u6301 json/png/txt/docx/doc/pdf\uff09\n        document.getElementById('lorebook-upload').addEventListener('change', async function(event) {\n            const files = event.target.files;\n            if (!files.length) return;\n            openModal('loading-modal');\n            for (const file of files) {\n                const name = file.name.replace(/\\.\\w+$/, '') || file.name;\n                const ext = file.name.split('.').pop().toLowerCase();\n                try {\n                    if (ext === 'json') {\n                        const text = await file.text();\n                        try {\n                            const jsonData = JSON.parse(text);\n                            let displayName = jsonData.name || name;\n                            let description = '';\n\n                            if (jsonData.entries) {\n                                const entries = Array.isArray(jsonData.entries)\n                                    ? jsonData.entries\n                                    : Object.values(jsonData.entries);\n                                description = entries.map(e => {\n                                    const title = e.comment || (Array.isArray(e.key) ? e.key.join(', ') : e.key) || '';\n                                    return (title ? '\u3010' + title + '\u3011\\n' : '') + (e.content || '');\n                                }).filter(s => s.trim()).join('\\n\\n\u2500\u2500\u2500\u2500\u2500\u2500\\n\\n');\n                            } else if (jsonData.items && Array.isArray(jsonData.items)) {\n                                description = jsonData.items.map(item => {\n                                    const enabled = item.enabled === false ? ' [\u5df2\u7981\u7528]' : '';\n                                    return '\u3010' + (item.name || '\u65e0\u6807\u9898') + enabled + '\u3011\\n' + (item.content || '\uff08\u65e0\u5185\u5bb9\uff09');\n                                }).join('\\n\\n\u2500\u2500\u2500\u2500\u2500\u2500\\n\\n');\n                            } else if (jsonData.description || (jsonData.data && jsonData.data.description)) {\n                                description = jsonData.description || jsonData.data.description;\n                            } else {\n                                description = JSON.stringify(jsonData, null, 2);\n                            }\n\n                            addLoreData({ name: displayName, description }, null);\n                            showToast('\u5df2\u5bfc\u5165: ' + displayName);\n                        } catch {\n                            addLoreData({ name, description: text }, null);\n                            showToast('\u5df2\u5bfc\u5165(\u539f\u6587): ' + name);\n                        }\n\n                    } else if (ext === 'png') {\n                        const buf = await file.arrayBuffer();\n                        const jsonData = parsePngChunk(buf);\n                        if (jsonData) { addLoreData(jsonData, URL.createObjectURL(file)); showToast('\u5df2\u5bfc\u5165: ' + name); }\n                        else showToast('\u6b64PNG\u4e0d\u542b\u89d2\u8272\u6570\u636e: ' + name, 'error');\n\n                    } else if (ext === 'txt') {\n                        const text = await file.text();\n                        addLoreData({ name, description: text.trim() }, null);\n                        showToast('\u5df2\u5bfc\u5165: ' + name);\n\n                    } else if (ext === 'docx' || ext === 'doc') {\n                        const buf = await file.arrayBuffer();\n                        const result = await mammoth.extractRawText({ arrayBuffer: buf });\n                        addLoreData({ name, description: result.value.trim() }, null);\n                        showToast('\u5df2\u5bfc\u5165: ' + name);\n\n                    } else if (ext === 'pdf') {\n                        const description = await extractPdfText(file);\n                        addLoreData({ name, description }, null);\n                        showToast('\u5df2\u5bfc\u5165: ' + name);\n\n                    } else {\n                        const text = await file.text().catch(() => '');\n                        addLoreData({ name, description: text.trim() }, null);\n                        showToast('\u5df2\u5bfc\u5165: ' + name);\n                    }\n                } catch(err) {\n                    showToast('\u5bfc\u5165\u5931\u8d25: ' + file.name, 'error');\n                    console.error(err);\n                }\n            }\n            event.target.value = '';\n            renderLoreCards();\n            closeModal('loading-modal');\n            showToast('\u5df2\u5bfc\u5165\uff0c\u5f53\u524d\u5171 ' + loreState.cards.length + ' \u4e2a\u6761\u76ee');\n        });\n\n        // PDF \u6587\u5b57\u63d0\u53d6\uff08\u6309\u9700\u52a0\u8f7d pdf.js\uff09\n        async function extractPdfText(file) {\n            // \u52a8\u6001\u52a0\u8f7d pdf.js\n            if (!window.pdfjsLib) {\n                await new Promise((resolve, reject) => {\n                    const s = document.createElement('script');\n                    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';\n                    s.onload = resolve; s.onerror = reject;\n                    document.head.appendChild(s);\n                });\n                window.pdfjsLib.GlobalWorkerOptions.workerSrc =\n                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';\n            }\n            try {\n                const buf = await file.arrayBuffer();\n                const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;\n                let fullText = '';\n                for (let i = 1; i <= pdf.numPages; i++) {\n                    const page = await pdf.getPage(i);\n                    const content = await page.getTextContent();\n                    const pageText = content.items.map(item => item.str).join(' ');\n                    fullText += pageText + (i < pdf.numPages ? '\\n\\n' : '');\n                }\n                return fullText.trim() || '[PDF\u5185\u5bb9\u4e3a\u7a7a\u6216\u65e0\u6cd5\u63d0\u53d6\u6587\u5b57]';\n            } catch(e) {\n                console.error('PDF\u63d0\u53d6\u5931\u8d25:', e);\n                return '[PDF\u89e3\u6790\u5931\u8d25\uff0c\u53ef\u80fd\u662f\u626b\u63cf\u4ef6\u6216\u52a0\u5bc6\u6587\u4ef6]';\n            }\n        }\n\n        function addLoreData(jsonData, imageUrl) {\n            const name = jsonData.name || (jsonData.data && jsonData.data.name) || '\u672a\u77e5\u6761\u76ee';\n            const desc = jsonData.description || (jsonData.data && jsonData.data.description) || '';\n            loreState.cards.push({\n                id: 'lore_' + Date.now() + '_' + Math.floor(Math.random() * 1000),\n                name, initial: name.charAt(0).toUpperCase(),\n                description: desc,\n                color: colors[Math.floor(Math.random() * colors.length)],\n                folderId: loreState.tree.currentId,\n                imageUrl\n            });\n        }\n\n        function openLoreModal(card) {\n            document.getElementById('lore-modal-title').innerText = card.name;\n            document.getElementById('lore-modal-body').innerText = card.description;\n            const btn = document.getElementById('lore-copy-btn');\n            btn.innerHTML = '<svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"><\/rect><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"><\/path><\/svg> \u590d\u5236\u4e16\u754c\u4e66';\n            btn.className = 'btn btn-secondary';\n            openModal('lore-modal');\n        }\n        function copyLoreContent() {\n            const text = document.getElementById('lore-modal-body').innerText;\n            navigator.clipboard.writeText(text).then(() => {\n                const btn = document.getElementById('lore-copy-btn');\n                btn.innerHTML = '<svg viewBox=\"0 0 24 24\"><polyline points=\"20 6 9 17 4 12\"><\/polyline><\/svg> \u5df2\u590d\u5236\uff01';\n                btn.className = 'btn';\n                setTimeout(() => {\n                    btn.innerHTML = '<svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"><\/rect><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"><\/path><\/svg> \u590d\u5236\u4e16\u754c\u4e66';\n                    btn.className = 'btn btn-secondary';\n                }, 2000);\n            }).catch(() => {\n                const ta = document.createElement('textarea');\n                ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;';\n                document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();\n                showToast('\u5df2\u590d\u5236\u5230\u526a\u8d34\u677f');\n            });\n        }\n\n        function renderLoreCards() {\n            renderBreadcrumb(loreState.tree, 'lore-breadcrumb', (action) => {\n                if (action === 'delete') deleteFolderNode(loreState.tree.currentId, loreState.tree, renderLoreCards);\n                else renderLoreCards();\n            });\n            const container = document.getElementById('lore-container');\n            container.className = loreViewMode;\n            container.innerHTML = '';\n            const curId = loreState.tree.currentId;\n            const subFolders = loreState.tree.children(curId);\n            subFolders.forEach(folder => {\n                const card = document.createElement('div');\n                card.className = 'folder-card';\n                const delBtn = document.createElement('button');\n                delBtn.className = 'folder-card-del'; delBtn.innerHTML = '\u2715';\n                delBtn.onclick = (e) => { e.stopPropagation(); deleteFolderNode(folder.id, loreState.tree, renderLoreCards); };\n                const icon = document.createElement('div'); icon.className = 'folder-icon'; icon.innerHTML = '\ud83d\udcd6';\n                const name = document.createElement('div'); name.className = 'card-name'; name.textContent = folder.name;\n                card.appendChild(delBtn); card.appendChild(icon); card.appendChild(name);\n                card.onclick = () => { loreState.tree.currentId = folder.id; renderLoreCards(); };\n                container.appendChild(card);\n            });\n            const visible = loreState.cards.filter(c => c.folderId === curId);\n            if (subFolders.length === 0 && visible.length === 0) {\n                container.innerHTML = '<p style=\"text-align:center;width:100%;color:var(--text-muted);padding:40px 20px;\">\u5f53\u524d\u6587\u4ef6\u5939\u4e3a\u7a7a\uff0c\u70b9\u51fb\u300c\u5bfc\u5165\u4e16\u754c\u4e66\u300d\u6216\u300c\u65b0\u5efa\u6587\u4ef6\u5939\u300d\u5f00\u59cb<\/p>';\n                return;\n            }\n            visible.forEach(card => {\n                const cardEl = document.createElement('div');\n                cardEl.className = 'card';\n                cardEl.onclick = () => openLoreModal(card);\n                const avatarHtml = card.imageUrl\n                    ? `<img src=\"${card.imageUrl}\" class=\"image-avatar\" alt=\"\">`\n                    : `<div class=\"text-avatar\" style=\"color:${card.color}\">${card.initial}<\/div>`;\n                cardEl.innerHTML = `\n                    <input type=\"checkbox\" class=\"card-checkbox\" data-id=\"${card.id}\" onclick=\"event.stopPropagation()\">\n                    ${avatarHtml}\n                    <div class=\"card-info\"><h4 class=\"card-name\">${card.name}<\/h4><\/div>`;\n                container.appendChild(cardEl);\n            });\n        }\n\n        // ============================================================\n        // \u2605 \u65e7\u7248 renderCards \u8986\u76d6\uff08\u65b0\u7248\u5df2\u5728 appState \u533a\u5757\u5b9a\u4e49\uff09\n        // ============================================================\n\n        window.onload = function() { initApp(); setupPWA(); renderHtmlCards(); renderThemeCards(); renderLoreCards(); };\n    <\/script>\n<\/body>\n<\/html>\n";
+let resourceLoaded = false;
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'api') { renderApiAll(); updateApiStats(); updateApiGroupFilter(); }
+  if (name === 'resource' && !resourceLoaded) {
+    resourceLoaded = true;
+    document.getElementById('resourceFrame').srcdoc = ST_HTML;
+  }
+}
+
+// ============================================================
+// 主页 - 背景图
+// ============================================================
+
+// ============================================================
+// 主页 - 手机导航
+// ============================================================
+const EMOJIS = ['📱','💻','🐱','🌿','✨','🎮','🌸','🍀','🦋','🌙','⭐','🎀','🔮','🍃','🌺','🐾','💚','🫧','🌊','🍵','🎵','🌈'];
+let selectedEmoji = '📱';
+let editMode = false;
+
+function getPhones() {
+  try { return JSON.parse(localStorage.getItem('phoneLinks') || '[]'); } catch { return []; }
+}
+function savePhones(arr) { localStorage.setItem('phoneLinks', JSON.stringify(arr)); }
+
+function renderPhoneCards() {
+  const grid = document.getElementById('phoneGrid');
+  const q = document.getElementById('homeSearch').value.toLowerCase();
+  const phones = getPhones().filter(l => l.name.toLowerCase().includes(q) || l.url.toLowerCase().includes(q));
+  if (phones.length === 0) {
+    grid.innerHTML = `<div class="home-empty">${q ? '没找到呢…' : '还没有小手机，快加一个吧 🌿'}</div>`;
+    return;
+  }
+  grid.innerHTML = phones.map((l, i) => `
+    <div class="phone-card" style="animation-delay:${i*0.04}s" onclick="handlePhoneClick(event,'${escAttr(l.url)}')">
+      <button class="delete-btn-home" onclick="deletePhone(event,${i})">✕</button>
+      <div class="card-icon-home">${l.emoji||'📱'}</div>
+      <div class="card-name-home">${escHtml(l.name)}</div>
+    </div>
+  `).join('');
+}
+
+function handlePhoneClick(e, url) {
+  if (editMode) return;
+  e.preventDefault();
+  window.open(url, '_blank');
+}
+
+function deletePhone(e, idx) {
+  e.stopPropagation();
+  const arr = getPhones(); arr.splice(idx, 1); savePhones(arr); renderPhoneCards();
+}
+
+function toggleEdit() {
+  editMode = !editMode;
+  document.body.classList.toggle('edit-mode', editMode);
+  document.getElementById('editBtn').textContent = editMode ? '✓ 完成' : '✏️ 整理';
+}
+
+function openHomeModal() {
+  document.getElementById('homeModalOverlayEl').classList.add('open');
+  document.getElementById('phoneName').value = '';
+  document.getElementById('phoneUrl').value = '';
+  selectedEmoji = '📱';
+  renderEmojiGrid();
+  document.getElementById('phoneName').focus();
+}
+function closeHomeModal() { document.getElementById('homeModalOverlayEl').classList.remove('open'); }
+function handleHomeOverlayClick(e) { if (e.target === document.getElementById('homeModalOverlayEl')) closeHomeModal(); }
+
+function renderEmojiGrid() {
+  document.getElementById('emojiGridHome').innerHTML = EMOJIS.map(em =>
+    `<button class="emoji-btn-home ${em===selectedEmoji?'selected':''}" onclick="selectEmoji('${em}')">${em}</button>`
+  ).join('');
+}
+function selectEmoji(em) { selectedEmoji = em; renderEmojiGrid(); }
+
+function savePhone() {
+  const name = document.getElementById('phoneName').value.trim();
+  let url = document.getElementById('phoneUrl').value.trim();
+  if (!name || !url) { toast('⚠️ 名称和网址都要填哦～'); return; }
+  if (!/^https?:\/\//.test(url)) url = 'https://' + url;
+  const arr = getPhones();
+  arr.push({ name, url, emoji: selectedEmoji });
+  savePhones(arr); closeHomeModal(); renderPhoneCards();
+  toast('✅ 已添加～');
+}
+
+// ============================================================
+// API Vault
+// ============================================================
+let apiData = JSON.parse(localStorage.getItem('api-vault-data') || '[]');
+let apiEditingId = null;
+let apiMaskKey = {};
+
+function saveApiData() {
+  localStorage.setItem('api-vault-data', JSON.stringify(apiData));
+  renderApiAll(); updateApiStats(); updateApiGroupFilter();
+}
+function genId() { return Date.now() + Math.random().toString(36).slice(2); }
+
+// 主题
+let apiTheme = localStorage.getItem('api-vault-theme') || 'light';
+function applyApiTheme() {
+  document.documentElement.setAttribute('data-theme', apiTheme);
+  document.getElementById('apiThemeBtn').textContent = apiTheme === 'dark' ? '☀️' : '🌙';
+}
+applyApiTheme();
+document.getElementById('apiThemeBtn').onclick = () => {
+  apiTheme = apiTheme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('api-vault-theme', apiTheme);
+  applyApiTheme();
+};
+
+function openApiModal(id = null) {
+  apiEditingId = id;
+  document.getElementById('apiModalTitle').textContent = id ? '编辑 API' : '添加 API';
+  ['f-name','f-url','f-key','f-model','f-note','f-newgroup'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('f-newgroup').classList.remove('show');
+  rebuildApiGroupSelect();
+  if (id) {
+    const e = apiData.find(x => x.id === id);
+    if (e) {
+      document.getElementById('f-name').value = e.name;
+      document.getElementById('f-url').value = e.url;
+      document.getElementById('f-key').value = e.key;
+      document.getElementById('f-model').value = e.model || '';
+      document.getElementById('f-note').value = e.note || '';
+      const sel = document.getElementById('f-group');
+      const opt = [...sel.options].find(o => o.value === e.group);
+      if (opt) sel.value = e.group;
+    }
+  }
+  document.getElementById('apiModalOverlayEl').classList.add('open');
+}
+function closeApiModal() { document.getElementById('apiModalOverlayEl').classList.remove('open'); apiEditingId = null; }
+function handleApiOverlayClick(e) { if (e.target === document.getElementById('apiModalOverlayEl')) closeApiModal(); }
+
+function rebuildApiGroupSelect() {
+  const groups = [...new Set(apiData.map(x => x.group).filter(Boolean))];
+  const sel = document.getElementById('f-group');
+  sel.innerHTML = '<option value="__new__">＋ 新建分组</option>';
+  groups.forEach(g => { const o = document.createElement('option'); o.value = g; o.textContent = g; sel.appendChild(o); });
+  if (groups.length > 0) sel.value = groups[0];
+  else { sel.value = '__new__'; document.getElementById('f-newgroup').classList.add('show'); }
+}
+
+function handleApiGroupChange() {
+  const v = document.getElementById('f-group').value;
+  document.getElementById('f-newgroup').classList.toggle('show', v === '__new__');
+}
+
+function saveApiEntry() {
+  const name = document.getElementById('f-name').value.trim();
+  const url = document.getElementById('f-url').value.trim();
+  const key = document.getElementById('f-key').value.trim();
+  const model = document.getElementById('f-model').value.trim();
+  const note = document.getElementById('f-note').value.trim();
+  let group = document.getElementById('f-group').value;
+  if (group === '__new__') group = document.getElementById('f-newgroup').value.trim();
+  if (!name) { toast('⚠️ 请填写名称'); return; }
+  if (!url) { toast('⚠️ 请填写 API 地址'); return; }
+  if (!key) { toast('⚠️ 请填写密钥'); return; }
+  if (!group) { toast('⚠️ 请填写分组'); return; }
+  if (apiEditingId) {
+    const idx = apiData.findIndex(x => x.id === apiEditingId);
+    if (idx >= 0) apiData[idx] = { ...apiData[idx], name, url, key, model, note, group };
+    toast('✅ 已更新');
+  } else {
+    apiData.push({ id: genId(), name, url, key, model, note, group, created: Date.now() });
+    toast('✅ 已添加');
+  }
+  saveApiData(); closeApiModal();
+}
+
+function deleteApiEntry(id) {
+  if (!confirm('确定要删除这条 API 吗？')) return;
+  apiData = apiData.filter(x => x.id !== id);
+  saveApiData(); toast('🗑️ 已删除');
+}
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '⎘'; btn.classList.remove('copied'); }, 1500);
+  });
+  toast('📋 已复制到剪贴板');
+}
+
+function toggleApiMask(id) { apiMaskKey[id] = !apiMaskKey[id]; renderApiAll(); }
+
+function maskStr(s) {
+  if (!s) return '—';
+  if (s.length <= 8) return '•'.repeat(s.length);
+  return s.slice(0,4) + '•'.repeat(Math.min(s.length-8,16)) + s.slice(-4);
+}
+
+function getApiGroups() {
+  const q = document.getElementById('apiSearchInput').value.toLowerCase();
+  const gf = document.getElementById('apiGroupFilter').value;
+  let filtered = apiData;
+  if (q) filtered = filtered.filter(x =>
+    x.name.toLowerCase().includes(q) || (x.model||'').toLowerCase().includes(q) ||
+    (x.url||'').toLowerCase().includes(q) || (x.note||'').toLowerCase().includes(q)
+  );
+  if (gf) filtered = filtered.filter(x => x.group === gf);
+  const groups = {};
+  filtered.forEach(e => { if (!groups[e.group]) groups[e.group] = []; groups[e.group].push(e); });
+  return groups;
+}
+
+function renderApiAll() {
+  const groups = getApiGroups();
+  const container = document.getElementById('apiMainContent');
+  const empty = document.getElementById('apiEmptyState');
+  container.innerHTML = '';
+  if (Object.keys(groups).length === 0) { empty.classList.add('show'); return; }
+  empty.classList.remove('show');
+  Object.entries(groups).forEach(([group, entries]) => {
+    const sec = document.createElement('div');
+    sec.className = 'group-section';
+    sec.innerHTML = `
+      <div class="group-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="group-label">${escHtml(group)}</div>
+        <div class="group-line"></div>
+        <div class="group-count">${entries.length}</div>
+        <div class="group-toggle">▾</div>
+      </div>
+      <div class="group-cards" id="cards-${group}"></div>
+    `;
+    const cards = sec.querySelector('.group-cards');
+    entries.forEach(e => {
+      const isMasked = !apiMaskKey[e.id];
+      const card = document.createElement('div');
+      card.className = 'api-card';
+      card.innerHTML = `
+        <div class="card-top">
+          <div class="card-name">${escHtml(e.name)}</div>
+          <div class="card-actions">
+            <button class="btn-icon" title="编辑" onclick="openApiModal('${e.id}')">✎</button>
+            <button class="btn-icon danger" title="删除" onclick="deleteApiEntry('${e.id}')">✕</button>
+          </div>
+        </div>
+        <div class="card-field">
+          <div class="field-label">API 地址</div>
+          <div class="field-value">
+            <span class="field-text" title="${escHtml(e.url)}">${escHtml(e.url)}</span>
+            <button class="btn-copy" title="复制" onclick="copyText('${escAttr(e.url)}',this)">⎘</button>
+          </div>
+        </div>
+        <div class="card-field">
+          <div class="field-label">密钥 <small style="color:var(--text3);font-size:10px;cursor:pointer" onclick="toggleApiMask('${e.id}')">${isMasked?'👁 显示':'🔒 隐藏'}</small></div>
+          <div class="field-value">
+            <span class="field-text ${isMasked?'masked':''}">${isMasked?maskStr(e.key):escHtml(e.key)}</span>
+            <button class="btn-copy" title="复制" onclick="copyText('${escAttr(e.key)}',this)">⎘</button>
+          </div>
+        </div>
+        ${e.model?`<div class="card-field"><div class="field-label">模型</div><span class="model-tag">${escHtml(e.model)}</span></div>`:''}
+        ${e.note?`<div class="card-field"><div class="field-label">备注</div><div class="field-value"><span class="field-text" style="white-space:normal">${escHtml(e.note)}</span></div></div>`:''}
+      `;
+      cards.appendChild(card);
+    });
+    container.appendChild(sec);
+  });
+}
+
+function updateApiStats() {
+  const groups = [...new Set(apiData.map(x => x.group).filter(Boolean))];
+  document.getElementById('apiStatsBar').innerHTML = `
+    <div class="stat-item"><span class="stat-num">${apiData.length}</span> 个 API</div>
+    <div class="stat-item"><span class="stat-num">${groups.length}</span> 个分组</div>
+  `;
+}
+
+function updateApiGroupFilter() {
+  const groups = [...new Set(apiData.map(x => x.group).filter(Boolean))];
+  const sel = document.getElementById('apiGroupFilter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">全部分组</option>';
+  groups.forEach(g => { const o = document.createElement('option'); o.value = g; o.textContent = g; sel.appendChild(o); });
+  if (cur && groups.includes(cur)) sel.value = cur;
+}
+
+// 键盘
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeApiModal(); closeHomeModal(); }
+});
+
+// ============================================================
+// 初始化
+// ============================================================
+document.getElementById('editBtn').addEventListener('click', toggleEdit);
+document.getElementById('btnAdd').addEventListener('click', openHomeModal);
+document.getElementById('btnApi').addEventListener('click', function(){ showPage('api'); });
+document.getElementById('btnResource').addEventListener('click', function(){ showPage('resource'); });
+
+// 返回主页按钮（资源页和API页）
+document.querySelectorAll('[data-back]').forEach(function(el){
+  el.addEventListener('click', function(){ showPage('home'); });
+});
+
+// overlay点击关闭
+var apiOverlay = document.getElementById('apiModalOverlayEl');
+if(apiOverlay) apiOverlay.addEventListener('click', handleApiOverlayClick);
+var homeOverlay = document.getElementById('homeModalOverlayEl');
+if(homeOverlay) homeOverlay.addEventListener('click', handleHomeOverlayClick);
+
+renderEmojiGrid();
+renderPhoneCards();
+</script>
+</body>
+</html>

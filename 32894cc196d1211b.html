@@ -1,0 +1,2215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SillyTavern 卡片整理工具</title>
+    <meta name="theme-color" content="#6a93b0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="角色卡片">
+    <meta name="application-name" content="角色卡片整理工具">
+    <style>
+        /* --- 极简低饱和调色板 & 玻璃拟物化变量 --- */
+        :root {
+            --bg-color: #eaf0f6; --text-main: #3a4350; --text-muted: #7b8898;
+            --glass-bg: rgba(255, 255, 255, 0.65); --glass-border: rgba(255, 255, 255, 0.5);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+            --accent-blue: #6a93b0; --accent-red: #c97a7e;
+            --radius-panel: 16px; --radius-btn: 10px;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a1d24; --text-main: #e2e8f0; --text-muted: #94a3b8;
+            --glass-bg: rgba(30, 34, 43, 0.65); --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --accent-blue: #557b9d; --accent-red: #b06569;
+        }
+
+        /* --- 基础与背景光晕特效 --- */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            margin: 0; padding: 20px 15px; 
+            background-color: var(--bg-color); color: var(--text-main); 
+            transition: background-color 0.4s ease; min-height: 100vh; overflow-x: hidden;
+        }
+        body::before, body::after { content: ''; position: fixed; border-radius: 50%; z-index: -1; filter: blur(80px); opacity: 0.6; }
+        body::before { top: -10%; left: -10%; width: 300px; height: 300px; background: #cce0ff; }
+        body::after { bottom: -10%; right: -10%; width: 250px; height: 250px; background: #e8d5ec; }
+        body.dark-mode::before { background: #1f2c41; }
+        body.dark-mode::after { background: #2d1b33; }
+
+        /* ★ 主 Tab 切换样式 ★ */
+        .main-tabs {
+            display: flex; gap: 0; margin-bottom: 16px;
+            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); border-radius: var(--radius-panel);
+            padding: 5px; box-shadow: var(--glass-shadow);
+        }
+        .main-tab {
+            flex: 1; padding: 10px 0; border: none; background: transparent;
+            color: var(--text-muted); font-size: 15px; font-weight: 500;
+            border-radius: calc(var(--radius-panel) - 4px); cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .main-tab:hover { color: var(--text-main); background: rgba(0,0,0,0.04); }
+        body.dark-mode .main-tab:hover { background: rgba(255,255,255,0.06); }
+        .main-tab.active {
+            background: var(--accent-blue); color: white;
+            box-shadow: 0 2px 10px rgba(106,147,176,0.3);
+        }
+
+        /* HTML卡片样式复用card，补一个删除按钮 */
+        .html-card-del {
+            position: absolute; top: 6px; right: 6px;
+            background: rgba(201,122,126,0.15); border: none; border-radius: 6px;
+            color: var(--accent-red); cursor: pointer; padding: 3px 6px; font-size: 12px;
+            opacity: 0; transition: opacity 0.2s;
+        }
+        .card:hover .html-card-del { opacity: 1; }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        /* --- 按钮样式重构 --- */
+        .btn { 
+            display: inline-flex; justify-content: center; align-items: center; gap: 6px;
+            padding: 10px 14px; cursor: pointer; border: 1px solid var(--glass-border); 
+            border-radius: var(--radius-btn); background: var(--accent-blue); color: white; 
+            font-size: 14px; font-weight: 500; transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); white-space: nowrap;
+        }
+        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn:active { transform: translateY(1px); }
+        .btn-secondary { background: var(--glass-bg); color: var(--text-main); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.8); }
+        body.dark-mode .btn-secondary:hover { background: rgba(60, 65, 80, 0.8); }
+        .btn-danger { background: var(--accent-red); color: white; }
+        
+        .file-input { display: none; }
+        select { 
+            padding: 10px 14px; border-radius: var(--radius-btn); border: 1px solid var(--glass-border); 
+            background: var(--glass-bg); color: var(--text-main); font-size: 15px; font-weight: 500; 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); appearance: none; cursor: pointer;
+        }
+
+        svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* --- 液态玻璃控制面板区 --- */
+        .controls-panel { 
+            background: var(--glass-bg); backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%);
+            padding: 18px; border-radius: var(--radius-panel); border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow); margin-bottom: 20px; display: flex; flex-direction: column; gap: 14px; position: relative;
+        }
+        .row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .action-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        hr { width: 100%; border: 0; border-top: 1px solid var(--glass-border); margin: 2px 0; }
+
+        /* 右上角公告按钮 */
+        .top-right-notice-btn {
+            position: absolute; top: 18px; right: 18px; background: transparent; border: none; 
+            color: var(--accent-blue); cursor: pointer; padding: 4px; border-radius: 50%; transition: 0.2s;
+        }
+        .top-right-notice-btn:hover { background: rgba(0,0,0,0.05); transform: scale(1.1); }
+        body.dark-mode .top-right-notice-btn:hover { background: rgba(255,255,255,0.1); }
+
+        /* --- 卡片容器 --- */
+        #card-container { display: flex; gap: 14px; transition: all 0.3s ease; }
+        .card { 
+            background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border); border-radius: var(--radius-panel); 
+            box-shadow: var(--glass-shadow); cursor: pointer; position: relative; transition: all 0.2s ease; 
+        }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(31,38,135,0.1); }
+        .card:active { transform: scale(0.97); }
+        .card-checkbox { position: absolute; top: 8px; left: 8px; width: 22px; height: 22px; cursor: pointer; z-index: 10; accent-color: var(--accent-blue); }
+        
+        .text-avatar { display: flex; justify-content: center; align-items: center; font-weight: bold; overflow: hidden; background: rgba(255,255,255,0.72); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.9); box-shadow: 0 4px 16px rgba(31,38,135,0.06); }
+        .image-avatar { object-fit: cover; } 
+
+        /* 3 列网格视图 */
+        #card-container.grid-view, #lore-container.grid-view { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        #card-container.grid-view .card, #lore-container.grid-view .card { padding: 10px; text-align: center; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
+        #card-container.grid-view .folder-card, #lore-container.grid-view .folder-card { }
+        #card-container.grid-view .text-avatar, #card-container.grid-view .image-avatar,
+        #lore-container.grid-view .text-avatar, #lore-container.grid-view .image-avatar { width: 100%; aspect-ratio: 1/1; border-radius: 10px; font-size: 32px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .card-name { margin: 10px 0 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; font-size: 13px; font-weight: 500; color: var(--text-main); }
+
+        /* 列表视图 */
+        #card-container.list-view, #lore-container.list-view { flex-direction: column; display: flex; }
+        #card-container.list-view .card, #lore-container.list-view .card { display: flex; align-items: center; padding: 12px; gap: 16px; }
+        #card-container.list-view .card-checkbox, #lore-container.list-view .card-checkbox { position: static; margin-left: 5px; }
+        #card-container.list-view .text-avatar, #card-container.list-view .image-avatar,
+        #lore-container.list-view .text-avatar, #lore-container.list-view .image-avatar { width: 52px; height: 52px; border-radius: 50%; font-size: 20px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        #card-container.list-view .card-info, #lore-container.list-view .card-info { text-align: left; flex-grow: 1; overflow: hidden; }
+        #card-container.list-view .card-name, #lore-container.list-view .card-name { margin: 0; font-size: 16px; }
+
+        /* --- 弹窗与Toast统一样式 --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 100; padding: 20px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content { 
+            background: var(--glass-bg); backdrop-filter: blur(25px) saturate(200%); -webkit-backdrop-filter: blur(25px) saturate(200%);
+            border: 1px solid var(--glass-border); color: var(--text-main); border-radius: 20px; 
+            width: 100%; max-width: 450px; max-height: 80vh; box-shadow: 0 24px 48px rgba(0,0,0,0.2); 
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2, .modal-header h3 { margin: 0; font-size: 18px; font-weight: 600; }
+        .modal-body-scroll { padding: 24px; overflow-y: auto; flex: 1; line-height: 1.6; color: var(--text-muted); }
+        .close-btn { cursor: pointer; color: var(--text-muted); transition: 0.2s; padding: 4px; border-radius: 50%; background: transparent; border: none; }
+        .close-btn:hover { color: var(--accent-red); background: rgba(0,0,0,0.05); }
+        .modal-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--glass-border); border-radius: var(--radius-btn); background: var(--bg-color); color: var(--text-main); }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; padding: 18px 24px; border-top: 1px solid var(--glass-border); background: rgba(0,0,0,0.02); }
+
+        /* 公告栏专属样式 */
+        #notice-modal .modal-content { width: 90vw; max-width: 90vw; height: 80vh; max-height: 80vh; background: rgba(255, 255, 255, 0.85); }
+        body.dark-mode #notice-modal .modal-content { background: rgba(30, 34, 43, 0.85); }
+        .notice-important { padding: 15px; background: rgba(201, 122, 126, 0.15); border-left: 4px solid var(--accent-red); border-radius: 4px; color: var(--accent-red); font-weight: bold; margin-bottom: 20px;}
+
+        /* 角色详情弹窗 body 文字颜色修正 */
+        #modal-body { color: var(--text-main); }
+
+        /* 加载动画 */
+        .spinner { border: 3px solid var(--glass-border); border-top: 3px solid var(--accent-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #loading-modal .modal-content { background: transparent; box-shadow: none; border: none; backdrop-filter: none; text-align: center; color: white; justify-content: center; }
+
+        /* ★ Toast 悬浮提示系统 ★ */
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(30, 34, 43, 0.9); color: white; padding: 12px 24px;
+            border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 9999; font-size: 14px; font-weight: 500;
+            opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            pointer-events: none; white-space: nowrap; backdrop-filter: blur(10px);
+        }
+        .toast.show { opacity: 1; top: 40px; }
+        .toast.error { background: rgba(201, 122, 126, 0.95); }
+
+        /* --- 面包屑导航 --- */
+        .breadcrumb {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+            padding: 8px 12px; background: rgba(0,0,0,0.03); border-radius: var(--radius-btn);
+            min-height: 38px;
+        }
+        .breadcrumb-item {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 13px; color: var(--text-muted); cursor: pointer;
+            padding: 3px 6px; border-radius: 6px; transition: 0.15s;
+            border: none; background: transparent;
+        }
+        .breadcrumb-item:hover { background: rgba(106,147,176,0.15); color: var(--accent-blue); }
+        .breadcrumb-item.active { color: var(--text-main); font-weight: 600; cursor: default; }
+        .breadcrumb-item.active:hover { background: transparent; color: var(--text-main); }
+        .breadcrumb-sep { color: var(--text-muted); font-size: 12px; opacity: 0.5; user-select: none; }
+
+        /* --- 文件夹卡片 --- */
+        .folder-card {
+            background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border); border-radius: var(--radius-panel);
+            box-shadow: var(--glass-shadow); cursor: pointer; position: relative;
+            transition: all 0.2s ease; padding: 10px; text-align: center;
+            display: flex; flex-direction: column; align-items: center; overflow: hidden;
+        }
+        .folder-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(31,38,135,0.1); }
+        .folder-card:active { transform: scale(0.97); }
+        .folder-icon {
+            width: 100%; aspect-ratio: 1/1; border-radius: 10px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 36px; background: rgba(106,147,176,0.12);
+        }
+        .folder-card .card-name { margin: 10px 0 0 0; font-size: 13px; font-weight: 500; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+        .folder-card-del {
+            position: absolute; top: 6px; right: 6px;
+            background: rgba(201,122,126,0.15); border: none; border-radius: 6px;
+            color: var(--accent-red); cursor: pointer; padding: 3px 6px; font-size: 12px;
+            opacity: 0; transition: opacity 0.2s;
+        }
+        .folder-card:hover .folder-card-del { opacity: 1; }
+
+        /* 列表视图里文件夹样式 */
+        #card-container.list-view .folder-card {
+            flex-direction: row; padding: 12px; gap: 16px; text-align: left;
+        }
+        #card-container.list-view .folder-icon {
+            width: 52px; height: 52px; aspect-ratio: unset; border-radius: 50%;
+            font-size: 22px; flex-shrink: 0;
+        }
+        #card-container.list-view .folder-card .card-name { margin: 0; font-size: 16px; }
+
+        /* 世界书文件夹卡片图标不撑满 */
+        #lore-container .folder-icon {
+            width: 100%; aspect-ratio: unset; height: 64px; font-size: 28px;
+        }
+        #lore-container.list-view .folder-icon {
+            width: 44px; height: 44px; font-size: 20px; flex-shrink: 0;
+        }
+        .folder-tree-list { list-style: none; padding: 0; margin: 0; }
+        .folder-tree-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 9px 12px; border-radius: 8px; cursor: pointer;
+            font-size: 14px; color: var(--text-main); transition: 0.15s;
+            border: none; background: transparent; width: 100%; text-align: left;
+        }
+        .folder-tree-item:hover { background: rgba(106,147,176,0.12); }
+        .folder-tree-item.selected { background: rgba(106,147,176,0.2); color: var(--accent-blue); font-weight: 600; }
+        .folder-tree-item .indent { display: inline-block; width: 18px; flex-shrink: 0; }
+
+        /* --- 手机端专门适配 --- */
+        @media (max-width: 480px) {
+            .controls-panel { padding: 15px 12px; gap: 12px; }
+            .row { flex-direction: column; align-items: stretch; gap: 10px; }
+            .action-group { justify-content: space-between; width: 100%; gap: 8px; }
+            .action-group:first-child { display: flex; }
+            .action-group:first-child .btn { flex: 1; justify-content: center; } 
+            .batch-actions-grid { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
+            .batch-actions-grid .btn { flex: 1; padding: 10px 4px; font-size: 13px; }
+            .top-right-notice-btn { top: 12px; right: 12px; }
+            .controls-panel > .row:first-child { padding-right: 35px; } 
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ★ 顶部大类切换 Tab ★ -->
+    <div class="main-tabs">
+        <button class="main-tab active" onclick="switchMainTab('cards')">角色卡</button>
+        <button class="main-tab" onclick="switchMainTab('lorebooks')">世界书</button>
+        <button class="main-tab" onclick="switchMainTab('themes')">美化</button>
+        <button class="main-tab" onclick="switchMainTab('html')">HTML</button>
+    </div>
+
+    <!-- 角色卡面板 -->
+    <div id="tab-cards">
+    <div class="controls-panel">
+        <button class="top-right-notice-btn" onclick="openModal('notice-modal')" aria-label="公告">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        </button>
+        <div class="row">
+            <div class="action-group">
+                <button class="btn" onclick="document.getElementById('file-upload').click()">
+                    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    导入卡片
+                </button>
+                <input type="file" id="file-upload" class="file-input" multiple accept="image/png, application/json, text/plain, .png, .json, .txt, .docx">
+            </div>
+            <div class="action-group">
+                <button class="btn btn-secondary" onclick="switchView('grid-view')">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    图标
+                </button>
+                <button class="btn btn-secondary" onclick="switchView('list-view')">
+                    <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    列表
+                </button>
+                <button class="btn btn-secondary" onclick="toggleTheme()" id="theme-btn" style="flex:0.5;">
+                    <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </button>
+                <button class="btn btn-secondary" id="install-btn" onclick="triggerInstall()" style="display:none;flex:0.5;" title="安装到桌面">
+                    <svg viewBox="0 0 24 24"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4"/><polyline points="17 9 12 14 7 9"/><line x1="12" y1="14" x2="12" y2="3"/></svg>
+                </button>
+            </div>
+        </div>
+        <hr>
+        <div id="cards-breadcrumb" class="breadcrumb"></div>
+        <div class="row" style="background:rgba(0,0,0,0.03);padding:12px;border-radius:var(--radius-btn);">
+            <div class="batch-actions-grid" style="width:100%;display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-secondary" onclick="cardsMkdir()">
+                    <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+                    新建文件夹
+                </button>
+                <button class="btn btn-secondary" onclick="toggleSelectAll()">
+                    <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>全选
+                </button>
+                <button class="btn btn-secondary" onclick="openMoveModal()">
+                    <svg viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg>移动
+                </button>
+                <button class="btn btn-danger" onclick="deleteSelectedCards()">
+                    <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>删卡片
+                </button>
+                <button class="btn btn-secondary" onclick="cardsOpenSizeModal()" title="调整卡片大小">
+                    <svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>大小
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="card-container" class="grid-view"></div>
+    </div><!-- /tab-cards -->
+
+    <!-- 美化面板 -->
+    <div id="tab-themes" style="display:none;">
+        <div class="controls-panel">
+            <div class="row">
+                <div class="action-group" style="width:100%;">
+                    <button class="btn" onclick="document.getElementById('theme-file-upload').click()" style="flex:1;">
+                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        导入
+                    </button>
+                    <input type="file" id="theme-file-upload" class="file-input" multiple accept=".docx,.doc,.txt,.css,text/css,text/plain,application/octet-stream">
+                    <button class="btn btn-secondary" onclick="toggleTheme()" id="theme-btn-themes" style="flex:0 0 44px;padding:10px 0;">
+                        <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <hr>
+            <div id="themes-breadcrumb" class="breadcrumb"></div>
+            <div class="row" style="background:rgba(0,0,0,0.03);padding:12px;border-radius:var(--radius-btn);">
+                <div class="batch-actions-grid" style="width:100%;display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-secondary" onclick="themesMkdir()">
+                        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+                        新建文件夹
+                    </button>
+                    <button class="btn btn-secondary" onclick="themeToggleSelectAll()">
+                        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>全选
+                    </button>
+                    <button class="btn btn-secondary" onclick="themeOpenMoveModal()">
+                        <svg viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg>移动
+                    </button>
+                    <button class="btn btn-danger" onclick="themeDeleteSelected()">
+                        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>删卡片
+                    </button>
+                    <button class="btn btn-secondary" onclick="themesOpenSizeModal()" title="调整卡片大小">
+                        <svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>大小
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="theme-card-container" style="display:grid;gap:12px;grid-template-columns:repeat(2,1fr);"></div>
+    </div>
+
+    <!-- HTML工具面板 -->
+    <div id="tab-html" style="display:none;">
+        <div class="controls-panel">
+            <!-- 第一行：导入 导出 夜间 -->
+            <div class="row">
+                <div class="action-group" style="width:100%;">
+                    <button class="btn" onclick="document.getElementById('html-file-upload').click()" style="flex:1;">
+                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        导入
+                    </button>
+                    <input type="file" id="html-file-upload" class="file-input" multiple accept=".docx,.doc,.dox,.txt,.json,text/plain,application/json,application/octet-stream">
+                    <button class="btn btn-secondary" onclick="toggleTheme()" id="theme-btn-html" style="flex:0 0 44px; padding:10px 0;">
+                        <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <hr>
+            <!-- 面包屑导航 -->
+            <div id="html-breadcrumb" class="breadcrumb"></div>
+            <!-- 批量操作栏 -->
+            <div class="row" style="background:rgba(0,0,0,0.03); padding:12px; border-radius:var(--radius-btn);">
+                <div class="batch-actions-grid" style="width:100%; display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="btn btn-secondary" onclick="htmlMkdir()">
+                        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+                        新建文件夹
+                    </button>
+                    <button class="btn btn-secondary" onclick="htmlToggleSelectAll()">
+                        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>全选
+                    </button>
+                    <button class="btn btn-secondary" onclick="htmlOpenMoveModal()">
+                        <svg viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg>移动
+                    </button>
+                    <button class="btn btn-danger" onclick="htmlDeleteSelected()">
+                        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>删卡片
+                    </button>
+                    <button class="btn btn-secondary" onclick="htmlOpenSizeModal()" title="调整卡片大小">
+                        <svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>大小
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="html-card-container" style="display:grid; gap:12px; grid-template-columns:repeat(2,1fr);"></div>
+    </div>
+
+    <!-- 世界书面板 -->
+    <div id="tab-lorebooks" style="display:none;">
+        <div class="controls-panel">
+            <div class="row">
+                <div class="action-group">
+                    <button class="btn" onclick="document.getElementById('lorebook-upload').click()">
+                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        导入世界书
+                    </button>
+                    <input type="file" id="lorebook-upload" class="file-input" multiple accept=".png,.json,.txt,.docx,.doc,.pdf,image/png,application/json,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                </div>
+                <div class="action-group">
+                    <button class="btn btn-secondary" onclick="switchLoreView('grid-view')">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        图标
+                    </button>
+                    <button class="btn btn-secondary" onclick="switchLoreView('list-view')">
+                        <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                        列表
+                    </button>
+                    <button class="btn btn-secondary" onclick="toggleTheme()" id="theme-btn-lore" style="flex:0.5;">
+                        <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <hr>
+            <div id="lore-breadcrumb" class="breadcrumb"></div>
+            <div class="row" style="background:rgba(0,0,0,0.03);padding:12px;border-radius:var(--radius-btn);">
+                <div class="batch-actions-grid" style="width:100%;display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-secondary" onclick="loreMkdir()">
+                        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+                        新建文件夹
+                    </button>
+                    <button class="btn btn-secondary" onclick="loreToggleSelectAll()">
+                        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>全选
+                    </button>
+                    <button class="btn btn-secondary" onclick="loreOpenMoveModal()">
+                        <svg viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg>移动
+                    </button>
+                    <button class="btn btn-danger" onclick="loreDeleteSelected()">
+                        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>删条目
+                    </button>
+                    <button class="btn btn-secondary" onclick="loreOpenSizeModal()" title="调整大小">
+                        <svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>大小
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="lore-container" class="grid-view"></div>
+    </div>
+
+    <!-- 通用大小弹窗（角色卡/美化/世界书共用，内容由 JS 动态填充） -->
+    <div id="generic-size-modal" class="modal">
+        <div class="modal-content" style="max-height:max-content;">
+            <div class="modal-header">
+                <h3>每行显示卡片数</h3>
+                <button class="close-btn" onclick="closeModal('generic-size-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="modal-body-scroll" style="display:flex;gap:12px;justify-content:center;padding:24px;">
+                <button class="btn btn-secondary" id="gcol-2" onclick="genericSetCols(2)" style="flex:1;font-size:20px;padding:18px 0;">2</button>
+                <button class="btn btn-secondary" id="gcol-3" onclick="genericSetCols(3)" style="flex:1;font-size:20px;padding:18px 0;">3</button>
+                <button class="btn btn-secondary" id="gcol-4" onclick="genericSetCols(4)" style="flex:1;font-size:20px;padding:18px 0;">4</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 面包屑「全部」跳转弹窗 -->
+    <div id="jump-modal" class="modal">
+        <div class="modal-content" style="max-height:max-content;max-width:360px;">
+            <div class="modal-header">
+                <h3>跳转到文件夹</h3>
+                <button class="close-btn" onclick="closeModal('jump-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="modal-body-scroll" style="padding:12px 16px;max-height:55vh;">
+                <ul id="jump-tree-list" class="folder-tree-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- HTML卡片大小弹窗 -->    <div id="html-size-modal" class="modal">
+        <div class="modal-content" style="max-height:max-content;">
+            <div class="modal-header">
+                <h3>每行显示卡片数</h3>
+                <button class="close-btn" onclick="closeModal('html-size-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="modal-body-scroll" style="display:flex; gap:12px; justify-content:center; padding:24px;">
+                <button class="btn btn-secondary" onclick="htmlSetCols(2)" id="html-col-btn-2" style="flex:1; font-size:20px; padding:18px 0;">2</button>
+                <button class="btn btn-secondary" onclick="htmlSetCols(3)" id="html-col-btn-3" style="flex:1; font-size:20px; padding:18px 0;">3</button>
+                <button class="btn btn-secondary" onclick="htmlSetCols(4)" id="html-col-btn-4" style="flex:1; font-size:20px; padding:18px 0;">4</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 美化预览弹窗 -->
+    <div id="theme-render-modal" class="modal">
+        <div class="modal-content" style="max-width:95vw;width:95vw;height:90vh;max-height:90vh;">
+            <div class="modal-header">
+                <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+                    <h3 id="theme-render-title" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">预览</h3>
+                    <button class="btn btn-secondary" onclick="switchThemeToSource()" style="flex-shrink:0;padding:6px 12px;font-size:13px;height:32px;">
+                        <svg viewBox="0 0 24 24" style="width:14px;height:14px;"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                        源代码
+                    </button>
+                </div>
+                <button class="close-btn" onclick="closeModal('theme-render-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div style="flex:1;overflow:hidden;padding:0;">
+                <iframe id="theme-render-frame" style="width:100%;height:100%;border:none;border-radius:0 0 20px 20px;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- 美化源码弹窗 -->
+    <div id="theme-source-modal" class="modal">
+        <div class="modal-content" style="max-width:95vw;width:95vw;height:90vh;max-height:90vh;">
+            <div class="modal-header">
+                <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+                    <button class="btn btn-secondary" onclick="switchThemeToRender()" style="flex-shrink:0;padding:6px 12px;font-size:13px;height:32px;">
+                        <svg viewBox="0 0 24 24" style="width:14px;height:14px;"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        返回预览
+                    </button>
+                    <h3 id="theme-source-title" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">源代码</h3>
+                </div>
+                <button class="close-btn" onclick="closeModal('theme-source-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div style="flex:1;overflow:auto;padding:16px 20px;">
+                <pre id="theme-source-code" style="margin:0;white-space:pre-wrap;word-break:break-all;font-family:'Courier New',Courier,monospace;font-size:13px;line-height:1.6;color:var(--text-main);background:transparent;"></pre>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" id="theme-source-copy-btn" onclick="copyThemeSource()">
+                    <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    复制源代码
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HTML渲染弹窗 -->
+    <div id="html-render-modal" class="modal">
+        <div class="modal-content" style="max-width:95vw; width:95vw; height:90vh; max-height:90vh;">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+                    <h3 id="html-render-title" style="margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">预览</h3>
+                    <button class="btn btn-secondary" onclick="switchToSource()" style="flex-shrink:0; padding:6px 12px; font-size:13px; height:32px;">
+                        <svg viewBox="0 0 24 24" style="width:14px;height:14px;"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                        源文件
+                    </button>
+                </div>
+                <button class="close-btn" onclick="closeModal('html-render-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div style="flex:1; overflow:hidden; padding:0;">
+                <iframe id="html-render-frame" style="width:100%; height:100%; border:none; border-radius:0 0 20px 20px;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- 源文件查看弹窗 -->
+    <div id="html-source-modal" class="modal">
+        <div class="modal-content" style="max-width:95vw; width:95vw; height:90vh; max-height:90vh;">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+                    <button class="btn btn-secondary" onclick="switchToRender()" style="flex-shrink:0; padding:6px 12px; font-size:13px; height:32px;">
+                        <svg viewBox="0 0 24 24" style="width:14px;height:14px;"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        返回预览
+                    </button>
+                    <h3 id="html-source-title" style="margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">源文件</h3>
+                </div>
+                <button class="close-btn" onclick="closeModal('html-source-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div style="flex:1; overflow:auto; padding:16px 20px;">
+                <pre id="html-source-code" style="margin:0; white-space:pre-wrap; word-break:break-all; font-family:'Courier New',Courier,monospace; font-size:13px; line-height:1.6; color:var(--text-main); background:transparent;"></pre>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" id="html-source-copy-btn" onclick="copyHtmlSource()">
+                    <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    复制全部
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 安装到桌面说明弹窗 -->
+    <div id="install-modal" class="modal">
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3>📲 添加到桌面</h3>
+                <button class="close-btn" onclick="closeModal('install-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="modal-body-scroll" style="gap: 16px; display: flex; flex-direction: column;">
+                <div style="background: rgba(106,147,176,0.1); border-left: 4px solid var(--accent-blue); border-radius: 8px; padding: 14px;">
+                    <div style="font-weight: 700; color: var(--text-main); margin-bottom: 8px;">🔷 Microsoft Edge</div>
+                    <div style="color: var(--text-muted); font-size: 14px; line-height: 1.8;">
+                        右上角菜单 <b>⋯</b> → <b>应用</b> → <b>将此站点安装为应用</b> → 确认
+                    </div>
+                </div>
+                <div style="background: rgba(106,147,176,0.1); border-left: 4px solid var(--accent-blue); border-radius: 8px; padding: 14px;">
+                    <div style="font-weight: 700; color: var(--text-main); margin-bottom: 8px;">🔵 Google Chrome</div>
+                    <div style="color: var(--text-muted); font-size: 14px; line-height: 1.8;">
+                        右上角菜单 <b>⋮</b> → <b>更多工具</b> → <b>创建快捷方式</b> → 勾选「<b>在窗口中打开</b>」→ 创建
+                    </div>
+                </div>
+                <div style="background: rgba(201,122,126,0.1); border-left: 4px solid var(--accent-red); border-radius: 8px; padding: 14px;">
+                    <div style="font-weight: 700; color: var(--text-main); margin-bottom: 6px;">⚠️ 注意</div>
+                    <div style="color: var(--text-muted); font-size: 13px; line-height: 1.7;">安装后每次打开都是独立窗口，<b>但数据仍不会跨会话保存</b>，请整理后记得导出。</div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" id="install-prompt-btn" onclick="triggerInstall()" style="display:none;">
+                    <svg viewBox="0 0 24 24"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4"/><polyline points="17 9 12 14 7 9"/><line x1="12" y1="14" x2="12" y2="3"/></svg>
+                    立即安装
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal('install-modal')">知道了</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 公告弹窗 -->
+    <div id="notice-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>系统公告</h3>
+                <button class="close-btn" onclick="closeModal('notice-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="modal-body-scroll">
+                <div class="notice-important">⚠️ 警告：【纯前端，刷新即丢失】</div>
+                <p>本工具基于<b>纯本地前端技术</b>构建，您的卡片仅保存在当前浏览器的临时缓存中。</p>
+                <p>这意味着：</p>
+                <ul>
+                    <li>我们<b>不会</b>收集您的任何数据。</li>
+                    <li>一旦您<b>刷新页面、关闭标签页或清理浏览器缓存</b>，未导出的进度将永久丢失。</li>
+                </ul>
+                <p><b>建议：</b>整理完毕后，务必使用<b>「导出」</b>功能下载备份！</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="closeModal('notice-modal')">我已了解</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 角色详情弹窗 -->
+    <div id="character-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 id="modal-title"></h2>
+                <button class="close-btn" onclick="closeModal('character-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="modal-body-scroll" id="modal-body" style="white-space: pre-wrap; font-size: 14px;"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="copyModalDesc()">
+                    <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    复制人设
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 世界书详情弹窗 -->
+    <div id="lore-modal" class="modal">
+        <div class="modal-content" style="max-width:500px;">
+            <div class="modal-header">
+                <h2 id="lore-modal-title"></h2>
+                <button class="close-btn" onclick="closeModal('lore-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="modal-body-scroll" id="lore-modal-body" style="white-space:pre-wrap;font-size:14px;"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="lore-copy-btn" onclick="copyLoreContent()">
+                    <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    复制世界书
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新建文件夹弹窗（三个面板共用） -->
+    <div id="mkdir-modal" class="modal">
+        <div class="modal-content" style="max-height: max-content;">
+            <div class="modal-header">
+                <h3>新建文件夹</h3>
+                <button class="close-btn" onclick="closeModal('mkdir-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="modal-body-scroll" style="padding-bottom:0;">
+                <p id="mkdir-hint" style="margin:0 0 10px; font-size:13px; color:var(--text-muted);"></p>
+                <input type="text" id="mkdir-input" class="modal-input" placeholder="输入文件夹名称">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('mkdir-modal')">取消</button>
+                <button class="btn" onclick="mkdirConfirm()">确认创建</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 移动弹窗（三个面板共用，树形选择） -->
+    <div id="move-modal" class="modal">
+        <div class="modal-content" style="max-height: max-content; max-width:380px;">
+            <div class="modal-header">
+                <h3>移动到...</h3>
+                <button class="close-btn" onclick="closeModal('move-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="modal-body-scroll" style="padding:12px 16px; max-height:50vh;">
+                <ul id="move-tree-list" class="folder-tree-list"></ul>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('move-modal')">取消</button>
+                <button class="btn" onclick="confirmMove()">确认移动</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载动画弹窗 -->
+    <div id="loading-modal" class="modal" style="z-index: 999;">
+        <div class="modal-content">
+            <div class="spinner"></div>
+            <h3 id="loading-text" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">正在解析底层数据...</h3>
+        </div>
+    </div>
+
+    <script>
+        // ★ 必须提前定义，tab onclick 需要在DOM加载时就能访问
+        function switchMainTab(tab) {
+            ['cards','lorebooks','themes','html'].forEach(function(t) {
+                var el = document.getElementById('tab-' + t);
+                if (el) el.style.display = (t === tab) ? 'block' : 'none';
+            });
+            document.querySelectorAll('.main-tab').forEach(function(btn, i) {
+                btn.classList.toggle('active', ['cards','lorebooks','themes','html'][i] === tab);
+            });
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script>
+        // ============================================================
+        // ★★★ 通用树形文件夹系统 FolderTree ★★★
+        // ============================================================
+        class FolderTree {
+            constructor() {
+                // folders: { id, name, parentId }
+                // 根节点 id = 'root'，不存在于数组中，parentId=null 表示在根下
+                this.folders = [];
+                this.currentId = 'root'; // 当前所在文件夹 id
+            }
+            mkFolder(name, parentId) {
+                parentId = parentId || 'root';
+                const id = 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+                this.folders.push({ id, name, parentId });
+                return id;
+            }
+            // 获取某文件夹的直接子文件夹
+            children(parentId) {
+                parentId = parentId || 'root';
+                return this.folders.filter(f => f.parentId === parentId);
+            }
+            // 获取某文件夹的所有后代 id（含自身）
+            descendants(folderId) {
+                const result = [folderId];
+                const queue = [folderId];
+                while (queue.length) {
+                    const pid = queue.shift();
+                    const kids = this.folders.filter(f => f.parentId === pid).map(f => f.id);
+                    result.push(...kids);
+                    queue.push(...kids);
+                }
+                return result;
+            }
+            // 获取路径数组 [{id,name},...] 从根到当前
+            path(folderId) {
+                folderId = folderId || this.currentId;
+                const parts = [];
+                let cur = folderId;
+                while (cur && cur !== 'root') {
+                    const f = this.folders.find(x => x.id === cur);
+                    if (!f) break;
+                    parts.unshift(f);
+                    cur = f.parentId;
+                }
+                return parts; // 不含根节点本身，根节点用"全部"显示
+            }
+            getFolderById(id) {
+                if (id === 'root') return { id: 'root', name: '全部', parentId: null };
+                return this.folders.find(f => f.id === id) || null;
+            }
+            // 删除文件夹（含后代），返回被删 id 列表
+            deleteFolder(folderId) {
+                if (folderId === 'root') return [];
+                const ids = this.descendants(folderId);
+                this.folders = this.folders.filter(f => !ids.includes(f.id));
+                return ids;
+            }
+            // 渲染扁平树形列表（用于移动选择器），跳过 skipIds
+            flatTree(skipIds) {
+                skipIds = skipIds || [];
+                const result = [];
+                const walk = (parentId, depth) => {
+                    const kids = this.children(parentId);
+                    kids.forEach(f => {
+                        if (!skipIds.includes(f.id)) {
+                            result.push({ ...f, depth });
+                            walk(f.id, depth + 1);
+                        }
+                    });
+                };
+                result.push({ id: 'root', name: '全部（根目录）', depth: 0 });
+                walk('root', 1);
+                return result;
+            }
+        }
+
+        // ============================================================
+        // ★ 应用状态
+        // ============================================================
+        let appState = {
+            tree: new FolderTree(),
+            cards: [],     // { id, name, initial, description, color, folderId, imageUrl }
+            isDarkMode: false
+        };
+        let htmlState = {
+            tree: new FolderTree(),
+            tools: []      // { id, name, htmlContent, folderId }
+        };
+        let themesState = {
+            tree: new FolderTree(),
+            items: []
+        };
+        let loreState = {
+            tree: new FolderTree(),
+            cards: []      // { id, name, initial, description, color, folderId, imageUrl }
+        };
+        const colors = ['#6a93b0', '#7a9e7e', '#c97a7e', '#d8b068', '#6a8cb0', '#9b82c3', '#c982a3', '#d99368'];
+
+        // ============================================================
+        // ★ 共用：新建文件夹弹窗 & 移动弹窗
+        // ============================================================
+        let _mkdirContext = null; // { tree, onDone }
+        let _moveContext  = null; // { tree, getItems, setFolder, getBreadcrumbEl, getContainerEl, render }
+        let _moveSelected = 'root';
+
+        function openMkdirModal(tree, onDone) {
+            _mkdirContext = { tree, onDone };
+            const hint = document.getElementById('mkdir-hint');
+            const cur = tree.getFolderById(tree.currentId);
+            hint.innerText = '在「' + (cur ? cur.name : '全部') + '」下新建文件夹';
+            document.getElementById('mkdir-input').value = '';
+            openModal('mkdir-modal');
+        }
+        function mkdirConfirm() {
+            if (!_mkdirContext) return;
+            const name = document.getElementById('mkdir-input').value.trim();
+            if (!name) return showToast('名称不能为空！', 'error');
+            const { tree, onDone } = _mkdirContext;
+            // 检查同级重名
+            const siblings = tree.children(tree.currentId);
+            if (siblings.find(f => f.name === name)) return showToast('同级已有同名文件夹！', 'error');
+            tree.mkFolder(name, tree.currentId);
+            closeModal('mkdir-modal');
+            showToast('已创建文件夹：' + name);
+            onDone();
+        }
+
+        function openMoveTreeModal(context) {
+            _moveContext = context;
+            _moveSelected = context.tree.currentId === 'root' ? 'root' : context.tree.currentId;
+            renderMoveTree();
+            openModal('move-modal');
+        }
+        function renderMoveTree() {
+            if (!_moveContext) return;
+            const list = document.getElementById('move-tree-list');
+            list.innerHTML = '';
+            // 获取选中项的 id（要跳过它们及其后代）
+            const selectedItems = _moveContext.getSelectedItems();
+            const skipFolderIds = selectedItems
+                .filter(item => item._isFolder)
+                .flatMap(item => _moveContext.tree.descendants(item.id));
+            const flat = _moveContext.tree.flatTree(skipFolderIds);
+            flat.forEach(f => {
+                const li = document.createElement('li');
+                const btn = document.createElement('button');
+                btn.className = 'folder-tree-item' + (f.id === _moveSelected ? ' selected' : '');
+                const indent = document.createElement('span');
+                indent.className = 'indent';
+                indent.style.paddingLeft = (f.depth * 14) + 'px';
+                btn.appendChild(indent);
+                btn.appendChild(document.createTextNode((f.id === 'root' ? '🏠 ' : '📁 ') + f.name));
+                btn.onclick = () => {
+                    _moveSelected = f.id;
+                    list.querySelectorAll('.folder-tree-item').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                };
+                li.appendChild(btn);
+                list.appendChild(li);
+            });
+        }
+        function confirmMove() {
+            if (!_moveContext) return closeModal('move-modal');
+            const targetId = _moveSelected;
+            _moveContext.doMove(targetId);
+            closeModal('move-modal');
+        }
+
+        // ============================================================
+        // ★ 通用：渲染面包屑
+        // ============================================================
+        let _jumpContext = null;
+        function openJumpModal(tree, onNavigate) {
+            _jumpContext = { tree, onNavigate };
+            const list = document.getElementById('jump-tree-list');
+            list.innerHTML = '';
+            const flat = tree.flatTree([]);
+            flat.forEach(f => {
+                const li = document.createElement('li');
+                const btn = document.createElement('button');
+                btn.className = 'folder-tree-item' + (f.id === tree.currentId ? ' selected' : '');
+                const indent = document.createElement('span');
+                indent.className = 'indent';
+                indent.style.paddingLeft = (f.depth * 14) + 'px';
+                btn.appendChild(indent);
+                btn.appendChild(document.createTextNode((f.id === 'root' ? '🏠 ' : '📁 ') + f.name));
+                btn.onclick = () => {
+                    tree.currentId = f.id;
+                    closeModal('jump-modal');
+                    onNavigate();
+                };
+                li.appendChild(btn);
+                list.appendChild(li);
+            });
+            openModal('jump-modal');
+        }
+
+        function renderBreadcrumb(tree, containerId, onNavigate) {
+            const el = document.getElementById(containerId);
+            el.innerHTML = '';
+            el.style.cursor = 'pointer';
+            const path = tree.path(tree.currentId);
+
+            // 整条栏点击空白 = 弹跳转（排除按钮本身冒泡）
+            el.onclick = (e) => {
+                if (e.target === el) openJumpModal(tree, onNavigate);
+            };
+
+            // 根节点——点击弹跳转
+            const rootBtn = document.createElement('button');
+            rootBtn.className = 'breadcrumb-item' + (tree.currentId === 'root' ? ' active' : '');
+            rootBtn.innerHTML = '🏠 全部';
+            rootBtn.onclick = (e) => { e.stopPropagation(); openJumpModal(tree, onNavigate); };
+            el.appendChild(rootBtn);
+
+            path.forEach((f, i) => {
+                const sep = document.createElement('span');
+                sep.className = 'breadcrumb-sep';
+                sep.innerHTML = ' › ';
+                el.appendChild(sep);
+
+                const btn = document.createElement('button');
+                const isLast = (i === path.length - 1);
+                btn.className = 'breadcrumb-item' + (isLast ? ' active' : '');
+                btn.textContent = f.name;
+                if (!isLast) {
+                    btn.onclick = (e) => { e.stopPropagation(); tree.currentId = f.id; onNavigate(); };
+                } else {
+                    btn.onclick = (e) => { e.stopPropagation(); openJumpModal(tree, onNavigate); };
+                }
+                el.appendChild(btn);
+            });
+
+            // 非根目录时显示删除文件夹按钮
+            if (tree.currentId !== 'root') {
+                const sep = document.createElement('span');
+                sep.className = 'breadcrumb-sep';
+                sep.innerHTML = '&nbsp;&nbsp;';
+                el.appendChild(sep);
+                const delBtn = document.createElement('button');
+                delBtn.className = 'breadcrumb-item';
+                delBtn.style.cssText = 'color:var(--accent-red);font-size:12px;';
+                delBtn.innerHTML = '🗑 删除此文件夹';
+                delBtn.onclick = (e) => { e.stopPropagation(); onNavigate('delete'); };
+                el.appendChild(delBtn);
+            }
+
+            // 右侧空白区补充一个透明可点区域撑满剩余空间
+            const filler = document.createElement('span');
+            filler.style.cssText = 'flex:1;min-width:20px;display:inline-block;';
+            filler.onclick = () => openJumpModal(tree, onNavigate);
+            el.appendChild(filler);
+        }
+
+        // ============================================================
+        // ★ 通用大小弹窗（角色卡 / 美化 / 世界书共用）
+        // ============================================================
+        let _genericColsContext = null; // { containerId, state }
+        let cardsCols = 3, themesCols = 2, loreCols = 3;
+
+        function openGenericSizeModal(containerId, currentCols, onSet) {
+            _genericColsContext = { containerId, currentCols, onSet };
+            [2,3,4].forEach(n => {
+                const btn = document.getElementById('gcol-' + n);
+                if (btn) btn.className = 'btn ' + (n === currentCols ? '' : 'btn-secondary');
+            });
+            openModal('generic-size-modal');
+        }
+        function genericSetCols(n) {
+            if (!_genericColsContext) return;
+            const { containerId, onSet } = _genericColsContext;
+            const el = document.getElementById(containerId);
+            if (el) el.style.gridTemplateColumns = 'repeat(' + n + ',1fr)';
+            onSet(n);
+            [2,3,4].forEach(i => {
+                const btn = document.getElementById('gcol-' + i);
+                if (btn) btn.className = 'btn ' + (i === n ? '' : 'btn-secondary');
+            });
+            closeModal('generic-size-modal');
+        }
+        function cardsOpenSizeModal() {
+            openGenericSizeModal('card-container', cardsCols, n => {
+                cardsCols = n;
+                // 覆盖 CSS class 的默认列数
+                document.getElementById('card-container').style.gridTemplateColumns = 'repeat(' + n + ',1fr)';
+            });
+        }
+        function themesOpenSizeModal() {
+            openGenericSizeModal('theme-card-container', themesCols, n => { themesCols = n; });
+        }
+        function loreOpenSizeModal() {
+            openGenericSizeModal('lore-container', loreCols, n => {
+                loreCols = n;
+                document.getElementById('lore-container').style.gridTemplateColumns = 'repeat(' + n + ',1fr)';
+            });
+        }
+
+        function initApp() { renderCards(); }
+        function switchView(viewName) { const container = document.getElementById('card-container'); container.className = ''; container.classList.add(viewName); }
+
+        function toggleTheme() { 
+            appState.isDarkMode = !appState.isDarkMode; 
+            document.body.classList.toggle('dark-mode', appState.isDarkMode); 
+            const sunSvg = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+            const moonSvg = `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+            ['theme-btn','theme-btn-html','theme-btn-themes','theme-btn-lore'].forEach(id => {
+                const b = document.getElementById(id);
+                if (b) b.innerHTML = appState.isDarkMode ? sunSvg : moonSvg;
+            });
+        }
+
+        function openModal(modalId) { document.getElementById(modalId).style.display = 'flex'; }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+        window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.style.display = 'none'; }
+        
+        function showToast(msg, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            void toast.offsetWidth;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        // ============================================================
+        // ★★★ 角色卡 逻辑 ★★★
+        // ============================================================
+        function cardsMkdir() {
+            openMkdirModal(appState.tree, () => renderCards());
+        }
+        function toggleSelectAll() {
+            const cbs = document.querySelectorAll('#card-container .card-checkbox');
+            const all = Array.from(cbs).every(c => c.checked);
+            cbs.forEach(c => c.checked = !all);
+        }
+        function openMoveModal() {
+            const checked = document.querySelectorAll('#card-container .card-checkbox:checked');
+            if (!checked.length) return showToast('请先勾选卡片！', 'error');
+            openMoveTreeModal({
+                tree: appState.tree,
+                getSelectedItems: () => Array.from(checked).map(cb => appState.cards.find(c => c.id === cb.dataset.id)).filter(Boolean),
+                doMove: (targetId) => {
+                    checked.forEach(cb => {
+                        const c = appState.cards.find(x => x.id === cb.dataset.id);
+                        if (c) c.folderId = targetId;
+                    });
+                    renderCards();
+                    showToast('已移动 ' + checked.length + ' 张卡片');
+                }
+            });
+        }
+        function deleteSelectedCards() {
+            const checked = document.querySelectorAll('#card-container .card-checkbox:checked');
+            if (!checked.length) return showToast('请先勾选卡片！', 'error');
+            if (confirm('确定删除选中的 ' + checked.length + ' 张卡片？')) {
+                const ids = Array.from(checked).map(cb => cb.dataset.id);
+                appState.cards = appState.cards.filter(c => !ids.includes(c.id));
+                renderCards();
+                showToast('已删除 ' + ids.length + ' 张', 'error');
+            }
+        }
+        function copyModalDesc() {
+            const text = document.getElementById('modal-body').innerText;
+            navigator.clipboard.writeText(text).then(() => showToast('人设已复制到剪贴板 ✓')).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+                ta.remove(); showToast('人设已复制到剪贴板 ✓');
+            });
+        }
+
+        function renderCards() {
+            // 面包屑
+            renderBreadcrumb(appState.tree, 'cards-breadcrumb', (action) => {
+                if (action === 'delete') deleteCurrentFolderCards();
+                else renderCards();
+            });
+            const container = document.getElementById('card-container');
+            container.innerHTML = '';
+            const curId = appState.tree.currentId;
+
+            // 子文件夹
+            const subFolders = appState.tree.children(curId);
+            subFolders.forEach(folder => {
+                const card = document.createElement('div');
+                card.className = 'folder-card';
+
+                // 删除按钮
+                const delBtn = document.createElement('button');
+                delBtn.className = 'folder-card-del';
+                delBtn.innerHTML = '✕';
+                delBtn.onclick = (e) => { e.stopPropagation(); deleteFolderNode(folder.id, appState.tree, renderCards); };
+
+                const icon = document.createElement('div');
+                icon.className = 'folder-icon';
+                icon.innerHTML = '📁';
+
+                const name = document.createElement('div');
+                name.className = 'card-name';
+                name.textContent = folder.name;
+
+                card.appendChild(delBtn);
+                card.appendChild(icon);
+                card.appendChild(name);
+                card.onclick = () => { appState.tree.currentId = folder.id; renderCards(); };
+                container.appendChild(card);
+            });
+
+            // 当前文件夹的卡片
+            const visibleCards = appState.cards.filter(c => c.folderId === curId);
+            if (subFolders.length === 0 && visibleCards.length === 0) {
+                container.innerHTML = '<p style="text-align:center;width:100%;color:var(--text-muted);padding:40px 20px;">当前文件夹为空，点击「导入卡片」或「新建文件夹」开始</p>';
+                return;
+            }
+            visibleCards.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.onclick = () => {
+                    document.getElementById('modal-title').innerText = card.name;
+                    document.getElementById('modal-body').innerText = card.description;
+                    openModal('character-modal');
+                };
+                const avatarHtml = card.imageUrl
+                    ? `<img src="${card.imageUrl}" class="image-avatar" alt="Avatar">`
+                    : `<div class="text-avatar" style="color:${card.color}">${card.initial}</div>`;
+                cardEl.innerHTML = `
+                    <input type="checkbox" class="card-checkbox" data-id="${card.id}" onclick="event.stopPropagation()">
+                    ${avatarHtml}
+                    <div class="card-info"><h4 class="card-name">${card.name}</h4></div>`;
+                container.appendChild(cardEl);
+            });
+        }
+
+        function deleteFolderNode(folderId, tree, rerender) {
+            const f = tree.getFolderById(folderId);
+            if (!f) return;
+            if (!confirm('删除文件夹「' + f.name + '」？\n其中所有内容会移至父文件夹。')) return;
+            const parentId = f.parentId || 'root';
+            // 把子文件夹的父改为被删文件夹的父
+            tree.folders.forEach(x => { if (x.parentId === folderId) x.parentId = parentId; });
+            // 把卡片的 folderId 改为父
+            if (appState.cards) appState.cards.forEach(c => { if (c.folderId === folderId) c.folderId = parentId; });
+            if (htmlState.tools) htmlState.tools.forEach(t => { if (t.folderId === folderId) t.folderId = parentId; });
+            tree.folders = tree.folders.filter(x => x.id !== folderId);
+            if (tree.currentId === folderId) tree.currentId = parentId;
+            rerender();
+            showToast('文件夹已删除，内容已上移', 'error');
+        }
+
+        function deleteCurrentFolderCards() {
+            deleteFolderNode(appState.tree.currentId, appState.tree, renderCards);
+        }
+
+        // ==========================================
+        // ★★★ 核心底层：PNG 解析功能（防弹版）★★★
+        // ==========================================
+        function parsePngChunk(arrayBuffer) {
+            try {
+                const dataView = new DataView(arrayBuffer);
+                const uint8Array = new Uint8Array(arrayBuffer);
+
+                // 校验 PNG 头
+                if (uint8Array[0] !== 0x89 || uint8Array[1] !== 0x50 || uint8Array[2] !== 0x4E || uint8Array[3] !== 0x47) return null;
+
+                let offset = 8;
+                while (offset < uint8Array.length) {
+                    if (offset + 8 > uint8Array.length) break;
+                    const length = dataView.getUint32(offset); offset += 4;
+                    const type = String.fromCharCode(uint8Array[offset], uint8Array[offset+1], uint8Array[offset+2], uint8Array[offset+3]); offset += 4;
+
+                    if (type === 'tEXt' || type === 'iTXt') {
+                        const chunkData = new Uint8Array(arrayBuffer, offset, length);
+                        const nullIndex = chunkData.indexOf(0);
+                        
+                        if (nullIndex !== -1) {
+                            const keyword = new TextDecoder().decode(chunkData.slice(0, nullIndex));
+                            if (keyword === 'chara' || keyword === 'ccv3' || keyword === 'TavernAI') {
+                                let textData;
+                                if (type === 'iTXt') {
+                                    let nullCount = 0; let textStart = nullIndex + 1;
+                                    for (let i = textStart; i < chunkData.length; i++) {
+                                        if (chunkData[i] === 0) { nullCount++; if (nullCount === 3) { textStart = i + 1; break; } }
+                                    }
+                                    textData = chunkData.slice(textStart);
+                                } else { textData = chunkData.slice(nullIndex + 1); }
+
+                                const encodedText = new TextDecoder('utf-8').decode(textData);
+
+                                // 多级降级解析保护
+                                try { return JSON.parse(encodedText); } catch(e1) {}
+                                try {
+                                    const cleanStr = encodedText.replace(/[^A-Za-z0-9+/=]/g, '');
+                                    const binString = window.atob(cleanStr);
+                                    try {
+                                        const bytes = new Uint8Array(binString.length);
+                                        for (let i = 0; i < binString.length; i++) bytes[i] = binString.charCodeAt(i);
+                                        return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+                                    } catch (e2) { return JSON.parse(decodeURIComponent(escape(binString))); }
+                                } catch(e3) { return null; }
+                            }
+                        }
+                    }
+                    offset += length + 4;
+                }
+            } catch (error) { console.error("解析图片时发生错误:", error); }
+            return null;
+        }
+
+        // ==========================================
+        // ★ 导入核心逻辑：自动区分 JSON 和 PNG ★
+        // ==========================================
+        document.getElementById('file-upload').addEventListener('change', async function(event) {
+            const files = event.target.files;
+            if (files.length === 0) return;
+            openModal('loading-modal');
+
+            const promises = Array.from(files).map(file => {
+                return new Promise(resolve => {
+                    if (file.name.toLowerCase().endsWith('.json')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            try {
+                                const jsonData = JSON.parse(e.target.result);
+                                addCardData(jsonData, null);
+                                showToast('已导入: ' + file.name.replace(/\.json$/i,''));
+                            } catch (err) { showToast('JSON解析失败: ' + file.name, 'error'); }
+                            resolve();
+                        };
+                        reader.onerror = () => resolve();
+                        reader.readAsText(file);
+                    } 
+                    else if (file.name.toLowerCase().endsWith('.png')) {
+                        const reader = new FileReader();
+                        reader.readAsArrayBuffer(file);
+                        reader.onload = function(e) {
+                            const jsonData = parsePngChunk(e.target.result);
+                            if (jsonData) {
+                                const imageUrl = URL.createObjectURL(file);
+                                addCardData(jsonData, imageUrl);
+                                showToast('已导入: ' + file.name.replace(/\.png$/i,''));
+                            } else {
+                                showToast('此PNG不含角色数据: ' + file.name, 'error');
+                            }
+                            resolve();
+                        };
+                        reader.onerror = () => resolve();
+                    }
+                    else if (file.name.toLowerCase().endsWith('.txt')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const text = e.target.result.trim();
+                            const name = file.name.replace(/\.txt$/i, '');
+                            addCardData({ name: name, description: text }, null);
+                            showToast('已导入: ' + name);
+                            resolve();
+                        };
+                        reader.onerror = () => resolve();
+                        reader.readAsText(file, 'UTF-8');
+                    }
+                    else if (file.name.toLowerCase().endsWith('.docx')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            mammoth.extractRawText({ arrayBuffer: e.target.result })
+                                .then(result => {
+                                    const text = result.value.trim();
+                                    const name = file.name.replace(/\.docx$/i, '');
+                                    addCardData({ name: name, description: text }, null);
+                                    showToast('已导入: ' + name);
+                                    resolve();
+                                })
+                                .catch(() => { showToast('DOCX解析失败: ' + file.name, 'error'); resolve(); });
+                        };
+                        reader.onerror = () => resolve();
+                        reader.readAsArrayBuffer(file);
+                    }
+                    else {
+                        resolve();
+                    }
+                });
+            });
+
+            await Promise.all(promises);
+            event.target.value = '';
+            renderCards();
+            closeModal('loading-modal');
+            showToast(`导入完成，当前共 ${appState.cards.length} 张卡片`);
+        });
+
+        // 将提取到的数据存入状态管理器
+        function addCardData(jsonData, imageUrl) {
+            const charName = jsonData.name || (jsonData.data && jsonData.data.name) || "未知角色";
+            const charDesc = jsonData.description || (jsonData.data && jsonData.data.description) || "暂无描述。";
+            appState.cards.push({
+                id: 'card_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                name: charName,
+                initial: charName.charAt(0).toUpperCase(),
+                description: charDesc,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                folderId: appState.tree.currentId,
+                imageUrl: imageUrl
+            });
+        }
+
+        // ==========================================
+        // ★★★ PWA：动态生成 Manifest + ServiceWorker ★★★
+        // ==========================================
+        let deferredInstallPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            // 显示一键安装按钮
+            document.getElementById('install-btn').style.display = 'inline-flex';
+            document.getElementById('install-prompt-btn').style.display = 'inline-flex';
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredInstallPrompt = null;
+            document.getElementById('install-btn').style.display = 'none';
+            showToast('✅ 已成功安装到桌面！');
+        });
+
+        function triggerInstall() {
+            if (deferredInstallPrompt) {
+                deferredInstallPrompt.prompt();
+                deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; });
+                closeModal('install-modal');
+            } else {
+                openModal('install-modal');
+            }
+        }
+
+        async function setupPWA() {
+            // 1. 用 canvas 生成图标 blob
+            function makeIcon(size) {
+                return new Promise(resolve => {
+                    const c = document.createElement('canvas');
+                    c.width = c.height = size;
+                    const ctx = c.getContext('2d');
+                    const r = size * 0.22;
+                    ctx.fillStyle = '#6a93b0';
+                    ctx.beginPath();
+                    ctx.moveTo(r, 0); ctx.lineTo(size - r, 0);
+                    ctx.quadraticCurveTo(size, 0, size, r);
+                    ctx.lineTo(size, size - r);
+                    ctx.quadraticCurveTo(size, size, size - r, size);
+                    ctx.lineTo(r, size);
+                    ctx.quadraticCurveTo(0, size, 0, size - r);
+                    ctx.lineTo(0, r);
+                    ctx.quadraticCurveTo(0, 0, r, 0);
+                    ctx.closePath(); ctx.fill();
+                    ctx.fillStyle = 'white';
+                    ctx.font = `bold ${Math.floor(size * 0.44)}px serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('卡', size / 2, size / 2 + size * 0.03);
+                    c.toBlob(resolve, 'image/png');
+                });
+            }
+
+            try {
+                const [blob192, blob512] = await Promise.all([makeIcon(192), makeIcon(512)]);
+                const url192 = URL.createObjectURL(blob192);
+                const url512 = URL.createObjectURL(blob512);
+
+                // 2. 创建 manifest blob
+                const manifest = {
+                    name: 'SillyTavern 卡片整理工具',
+                    short_name: '角色卡片',
+                    description: '本地角色卡片整理与管理工具',
+                    start_url: window.location.href,
+                    scope: window.location.href,
+                    display: 'standalone',
+                    orientation: 'any',
+                    background_color: '#eaf0f6',
+                    theme_color: '#6a93b0',
+                    icons: [
+                        { src: url192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+                        { src: url512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+                    ]
+                };
+                const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+                const manifestLink = document.createElement('link');
+                manifestLink.rel = 'manifest';
+                manifestLink.href = URL.createObjectURL(manifestBlob);
+                document.head.appendChild(manifestLink);
+            } catch(e) { console.log('Manifest setup skipped:', e); }
+
+            // 3. 注册 ServiceWorker（blob URL 技巧）
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    const CACHE_NAME = 'card-tool-v1';
+                    self.addEventListener('install', () => self.skipWaiting());
+                    self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+                    self.addEventListener('fetch', e => {
+                        e.respondWith(fetch(e.request).catch(() => new Response('', { status: 503 })));
+                    });
+                `;
+                try {
+                    const swBlob = new Blob([swCode], { type: 'text/javascript' });
+                    await navigator.serviceWorker.register(URL.createObjectURL(swBlob));
+                } catch(e) { console.log('SW registration skipped:', e); }
+            }
+        }
+
+        // ============================================================
+        // ★★★ HTML工具 完整逻辑 ★★★
+        // ============================================================
+        // htmlState 已在上方 appState 区块定义
+
+        // 判断是否是 DOCX（ZIP magic bytes: PK\x03\x04）
+        async function isDocxFile(file) {
+            if (/\.(docx|doc)$/i.test(file.name)) return true;
+            // 无扩展名时读 magic bytes
+            try {
+                const buf = await file.slice(0, 4).arrayBuffer();
+                const bytes = new Uint8Array(buf);
+                // PK zip header = 50 4B 03 04
+                return bytes[0] === 0x50 && bytes[1] === 0x4B && bytes[2] === 0x03 && bytes[3] === 0x04;
+            } catch { return false; }
+        }
+
+        function extractHtmlFromText(raw) {
+            // docx 经 mammoth 提取后，< > 可能被转义为 \< \>，先还原
+            let text = raw.replace(/\\</g, '<').replace(/\\>/g, '>');
+            // 同时处理可能的 HTML 实体
+            text = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+
+            // 优先找完整文档起点
+            const patterns = [
+                /<!DOCTYPE\s+html/i,
+                /<html[\s>]/i,
+                // 有些世界书只有 <div ... style= 这种片段入口，也尝试匹配
+                /<div\s[^>]*style\s*=/i,
+                /<style[\s>]/i,
+            ];
+            let startIdx = -1;
+            for (const pat of patterns) {
+                const m = text.search(pat);
+                if (m !== -1 && (startIdx === -1 || m < startIdx)) startIdx = m;
+            }
+            if (startIdx === -1) return null; // 完全找不到 HTML，返回 null
+            return text.slice(startIdx);
+        }
+
+        // --- 导入 ---
+        document.getElementById('html-file-upload').addEventListener('change', async function(e) {
+            const files = e.target.files;
+            if (!files.length) return;
+            for (const file of files) {
+                const name = file.name.replace(/\.(docx|doc|dox|txt|json)$/i, '') || file.name;
+                const ext = file.name.split('.').pop().toLowerCase();
+                try {
+                    let htmlContent = null;
+
+                    if (ext === 'json') {
+                        // JSON：尝试提取 replacePattern（ST状态栏预设格式）或其他含HTML的字段
+                        const text = await file.text();
+                        try {
+                            const jsonData = JSON.parse(text);
+                            // 优先找含HTML的字段
+                            const htmlFields = ['replacePattern', 'content', 'html', 'template', 'value'];
+                            for (const field of htmlFields) {
+                                if (jsonData[field] && typeof jsonData[field] === 'string') {
+                                    const extracted = extractHtmlFromText(jsonData[field]);
+                                    if (extracted) { htmlContent = extracted; break; }
+                                }
+                            }
+                            // items 数组里找
+                            if (!htmlContent && jsonData.items && Array.isArray(jsonData.items)) {
+                                for (const item of jsonData.items) {
+                                    for (const field of htmlFields) {
+                                        if (item[field]) {
+                                            const extracted = extractHtmlFromText(String(item[field]));
+                                            if (extracted) { htmlContent = extracted; break; }
+                                        }
+                                    }
+                                    if (htmlContent) break;
+                                }
+                            }
+                            // 找不到HTML就把整个json格式化展示
+                            if (!htmlContent) {
+                                htmlContent = '<pre style="white-space:pre-wrap;word-break:break-all;font-size:13px;line-height:1.6;">' +
+                                    JSON.stringify(jsonData, null, 2).replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>';
+                            }
+                        } catch {
+                            // 非法json当纯文本
+                            htmlContent = '<pre style="white-space:pre-wrap;font-size:13px;">' + text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>';
+                        }
+
+                    } else if (ext === 'dox' || ext === 'docx' || ext === 'doc') {
+                        const arrayBuffer = await file.arrayBuffer();
+                        const result = await mammoth.extractRawText({ arrayBuffer });
+                        htmlContent = extractHtmlFromText(result.value);
+
+                    } else {
+                        // txt 及其他文本格式
+                        const text = await file.text();
+                        htmlContent = extractHtmlFromText(text);
+                    }
+
+                    if (!htmlContent) { showToast('未找到 HTML 内容: ' + name, 'error'); continue; }
+                    const id = 'ht_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+                    htmlState.tools.push({ id, name, htmlContent, folderId: htmlState.tree.currentId });
+                    showToast('已导入: ' + name);
+                } catch(err) {
+                    showToast('导入失败: ' + file.name, 'error');
+                    console.error(err);
+                }
+            }
+            e.target.value = '';
+            renderHtmlCards();
+        });
+
+        // --- HTML 文件夹 ---
+        function htmlMkdir() {
+            openMkdirModal(htmlState.tree, () => renderHtmlCards());
+        }
+        function htmlToggleSelectAll() {
+            const cbs = document.querySelectorAll('#html-card-container .html-cb');
+            const all = Array.from(cbs).every(c => c.checked);
+            cbs.forEach(c => c.checked = !all);
+        }
+        function htmlOpenMoveModal() {
+            const checked = document.querySelectorAll('#html-card-container .html-cb:checked');
+            if (!checked.length) return showToast('请先勾选卡片！', 'error');
+            openMoveTreeModal({
+                tree: htmlState.tree,
+                getSelectedItems: () => Array.from(checked).map(cb => htmlState.tools.find(t => t.id === cb.dataset.id)).filter(Boolean),
+                doMove: (targetId) => {
+                    checked.forEach(cb => {
+                        const t = htmlState.tools.find(x => x.id === cb.dataset.id);
+                        if (t) t.folderId = targetId;
+                    });
+                    renderHtmlCards();
+                    showToast('已移动 ' + checked.length + ' 张卡片');
+                }
+            });
+        }
+        function htmlDeleteSelected() {
+            const checked = document.querySelectorAll('#html-card-container .html-cb:checked');
+            if (!checked.length) return showToast('请先勾选卡片！', 'error');
+            if (confirm('确定删除选中的 ' + checked.length + ' 张卡片？')) {
+                const ids = Array.from(checked).map(cb => cb.dataset.id);
+                htmlState.tools = htmlState.tools.filter(t => !ids.includes(t.id));
+                renderHtmlCards();
+                showToast('已删除 ' + ids.length + ' 张', 'error');
+            }
+        }
+
+        // --- 列数控制 ---
+        let htmlCols = 2;
+        function htmlSetCols(n) {
+            htmlCols = n;
+            document.getElementById('html-card-container').style.gridTemplateColumns = 'repeat(' + n + ',1fr)';
+            [2,3,4].forEach(i => {
+                const btn = document.getElementById('html-col-btn-' + i);
+                if (btn) btn.className = 'btn ' + (i === n ? '' : 'btn-secondary');
+            });
+            closeModal('html-size-modal');
+        }
+        function htmlOpenSizeModal() {
+            [2,3,4].forEach(i => {
+                const btn = document.getElementById('html-col-btn-' + i);
+                if (btn) btn.className = 'btn ' + (i === htmlCols ? '' : 'btn-secondary');
+            });
+            openModal('html-size-modal');
+        }
+
+        // --- 渲染 HTML 卡片（含子文件夹，长按=预览，单击=勾选）---
+        function renderHtmlCards() {
+            renderBreadcrumb(htmlState.tree, 'html-breadcrumb', (action) => {
+                if (action === 'delete') deleteFolderNode(htmlState.tree.currentId, htmlState.tree, renderHtmlCards);
+                else renderHtmlCards();
+            });
+            const container = document.getElementById('html-card-container');
+            container.innerHTML = '';
+            container.style.gridTemplateColumns = 'repeat(' + htmlCols + ',1fr)';
+            const curId = htmlState.tree.currentId;
+
+            // 子文件夹
+            const subFolders = htmlState.tree.children(curId);
+            subFolders.forEach(folder => {
+                const card = document.createElement('div');
+                card.className = 'folder-card';
+                card.style.cssText = 'user-select:none;-webkit-user-select:none;';
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'folder-card-del';
+                delBtn.innerHTML = '✕';
+                delBtn.onclick = (e) => { e.stopPropagation(); deleteFolderNode(folder.id, htmlState.tree, renderHtmlCards); };
+
+                const icon = document.createElement('div');
+                icon.className = 'folder-icon';
+                icon.innerHTML = '📁';
+
+                const name = document.createElement('div');
+                name.className = 'card-name';
+                name.textContent = folder.name;
+
+                card.appendChild(delBtn);
+                card.appendChild(icon);
+                card.appendChild(name);
+                card.onclick = () => { htmlState.tree.currentId = folder.id; renderHtmlCards(); };
+                container.appendChild(card);
+            });
+
+            // 当前文件夹的 tool 卡
+            const visible = htmlState.tools.filter(t => t.folderId === curId);
+            if (subFolders.length === 0 && visible.length === 0) {
+                container.style.gridTemplateColumns = '';
+                container.innerHTML = '<p style="text-align:center;width:100%;color:var(--text-muted);padding:40px 20px;">当前文件夹为空，点击「导入」或「新建文件夹」开始</p>';
+                return;
+            }
+
+            visible.forEach(tool => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.cssText = 'padding:10px;text-align:center;display:flex;flex-direction:column;align-items:center;overflow:hidden;position:relative;cursor:pointer;user-select:none;-webkit-user-select:none;';
+
+                const cb = document.createElement('input');
+                cb.type = 'checkbox'; cb.className = 'card-checkbox html-cb'; cb.dataset.id = tool.id;
+                cb.style.cssText = 'position:absolute;top:8px;left:8px;width:22px;height:22px;cursor:pointer;z-index:10;accent-color:var(--accent-blue);';
+                cb.onclick = e => e.stopPropagation();
+
+                const avatar = document.createElement('div');
+                avatar.className = 'text-avatar';
+                avatar.style.cssText = 'width:100%;aspect-ratio:1/1;border-radius:10px;font-size:28px;background:rgba(255,255,255,0.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.9);box-shadow:0 4px 16px rgba(31,38,135,0.06);';
+                avatar.innerText = 'H';
+
+                const nameEl = document.createElement('div');
+                nameEl.className = 'card-name';
+                nameEl.innerText = tool.name;
+
+                card.appendChild(cb); card.appendChild(avatar); card.appendChild(nameEl);
+
+                // 长按=预览，短按=勾选
+                let pressTimer = null, moved = false;
+                const startPress = () => { moved = false; pressTimer = setTimeout(() => { if (!moved) openHtmlRender(tool); }, 500); };
+                const cancelPress = () => { clearTimeout(pressTimer); pressTimer = null; };
+                const onMove = () => { moved = true; cancelPress(); };
+                card.addEventListener('touchstart', startPress, { passive: true });
+                card.addEventListener('touchend', cancelPress);
+                card.addEventListener('touchmove', onMove, { passive: true });
+                card.addEventListener('mousedown', startPress);
+                card.addEventListener('mouseup', cancelPress);
+                card.addEventListener('mouseleave', cancelPress);
+                card.onclick = (e) => { if (e.target === cb) return; cb.checked = !cb.checked; };
+
+                container.appendChild(card);
+            });
+        }
+
+        // --- 渲染/源码弹窗 ---
+        let _currentRenderTool = null;
+        function openHtmlRender(tool) {
+            _currentRenderTool = tool;
+            document.getElementById('html-render-title').innerText = tool.name;
+            document.getElementById('html-render-frame').srcdoc = tool.htmlContent;
+            openModal('html-render-modal');
+        }
+        function switchToSource() {
+            if (!_currentRenderTool) return;
+            document.getElementById('html-source-title').innerText = _currentRenderTool.name + ' — 源文件';
+            document.getElementById('html-source-code').textContent = _currentRenderTool.htmlContent;
+            const btn = document.getElementById('html-source-copy-btn');
+            btn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> 复制全部';
+            btn.className = 'btn';
+            document.getElementById('html-render-modal').style.display = 'none';
+            document.getElementById('html-source-modal').style.display = 'flex';
+        }
+        function switchToRender() {
+            document.getElementById('html-source-modal').style.display = 'none';
+            document.getElementById('html-render-modal').style.display = 'flex';
+        }
+        function copyHtmlSource() {
+            if (!_currentRenderTool) return;
+            navigator.clipboard.writeText(_currentRenderTool.htmlContent).then(() => {
+                const btn = document.getElementById('html-source-copy-btn');
+                btn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> 已复制！';
+                btn.className = 'btn btn-secondary';
+                setTimeout(() => {
+                    btn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> 复制全部';
+                    btn.className = 'btn';
+                }, 2000);
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = _currentRenderTool.htmlContent;
+                ta.style.cssText = 'position:fixed;opacity:0;';
+                document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+                showToast('已复制到剪贴板');
+            });
+        }
+
+        function themesMkdir() { openMkdirModal(themesState.tree, () => renderThemeCards()); }
+        function themeToggleSelectAll() {
+            const cbs = document.querySelectorAll('#theme-card-container .theme-cb');
+            const all = Array.from(cbs).every(c => c.checked);
+            cbs.forEach(c => c.checked = !all);
+        }
+        function themeOpenMoveModal() {
+            const checked = document.querySelectorAll('#theme-card-container .theme-cb:checked');
+            if (!checked.length) return showToast('请先勾选卡片！', 'error');
+            openMoveTreeModal({
+                tree: themesState.tree,
+                getSelectedItems: () => Array.from(checked).map(cb => themesState.items.find(t => t.id === cb.dataset.id)).filter(Boolean),
+                doMove: (targetId) => {
+                    checked.forEach(cb => {
+                        const t = themesState.items.find(x => x.id === cb.dataset.id);
+                        if (t) t.folderId = targetId;
+                    });
+                    renderThemeCards();
+                    showToast('已移动 ' + checked.length + ' 张');
+                }
+            });
+        }
+        function themeDeleteSelected() {
+            const checked = document.querySelectorAll('#theme-card-container .theme-cb:checked');
+            if (!checked.length) return showToast('请先勾选卡片！', 'error');
+            if (confirm('确定删除选中的 ' + checked.length + ' 张？')) {
+                const ids = Array.from(checked).map(cb => cb.dataset.id);
+                themesState.items = themesState.items.filter(t => !ids.includes(t.id));
+                renderThemeCards();
+                showToast('已删除 ' + ids.length + ' 张', 'error');
+            }
+        }
+
+        // 美化导入（docx/doc/txt/css）
+        document.getElementById('theme-file-upload').addEventListener('change', async function(e) {
+            const files = e.target.files;
+            if (!files.length) return;
+            for (const file of files) {
+                const name = file.name.replace(/\.(docx|doc|txt|css)$/i, '') || file.name;
+                const ext = file.name.split('.').pop().toLowerCase();
+                try {
+                    let cssContent = '';
+                    if (ext === 'docx' || ext === 'doc') {
+                        const buf = await file.arrayBuffer();
+                        const result = await mammoth.extractRawText({ arrayBuffer: buf });
+                        cssContent = result.value.trim();
+                    } else {
+                        cssContent = await file.text();
+                    }
+                    if (!cssContent.trim()) { showToast('文件内容为空: ' + name, 'error'); continue; }
+                    const id = 'th_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+                    themesState.items.push({ id, name, cssContent, folderId: themesState.tree.currentId });
+                    showToast('已导入: ' + name);
+                } catch(err) {
+                    showToast('导入失败: ' + file.name, 'error');
+                    console.error(err);
+                }
+            }
+            e.target.value = '';
+            renderThemeCards();
+        });
+
+        // 气泡预览 HTML 模板（兼容各种命名约定）
+        function buildPreviewHtml(cssContent) {
+            return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f0f2f5;padding:16px 12px;min-height:100vh;}
+.chat-wrap{display:flex;flex-direction:column;gap:4px;max-width:440px;margin:0 auto;}
+
+/* --- 纯布局，不设任何颜色，完全交给用户CSS --- */
+.message-wrapper{display:flex;align-items:flex-end;gap:8px;position:relative;margin-bottom:4px;}
+.message-wrapper.ai,.message-wrapper.received,.message-wrapper.char{flex-direction:row;}
+.message-wrapper.user,.message-wrapper.sent,.message-wrapper.me{flex-direction:row-reverse;}
+
+.avatar{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;}
+.message-wrapper.ai .avatar,.message-wrapper.received .avatar,.message-wrapper.char .avatar{background:#b8d4f0;}
+.message-wrapper.user .avatar,.message-wrapper.sent .avatar,.message-wrapper.me .avatar{background:#f0c8d4;}
+
+.message-bubble{position:relative;max-width:75%;word-break:break-word;}
+.message-bubble .content{padding:10px 14px;font-size:14px;line-height:1.6;word-break:break-word;}
+
+/* ===== 注入用户CSS ===== */
+${cssContent}
+</style></head><body>
+<div class="chat-wrap">
+
+  <div class="message-wrapper ai received char">
+    <div class="avatar">🤖</div>
+    <div class="message-bubble ai received char">
+      <div class="content">你好！我是 AI，很高兴认识你～</div>
+    </div>
+  </div>
+
+  <div class="message-wrapper user sent me">
+    <div class="avatar">🧑</div>
+    <div class="message-bubble user sent me">
+      <div class="content">嗨！这个气泡好看吗？</div>
+    </div>
+  </div>
+
+  <div class="message-wrapper ai received char">
+    <div class="avatar">🤖</div>
+    <div class="message-bubble ai received char">
+      <div class="content">当然好看！这是稍微长一点的回复，用来看换行和间距的效果，以及气泡整体的视觉观感。</div>
+    </div>
+  </div>
+
+  <div class="message-wrapper user sent me">
+    <div class="avatar">🧑</div>
+    <div class="message-bubble user sent me">
+      <div class="content">明白了，感谢！</div>
+    </div>
+  </div>
+
+  <div class="message-wrapper ai received char">
+    <div class="avatar">🤖</div>
+    <div class="message-bubble ai received char">
+      <div class="content">随时为你服务，有什么想聊的尽管说～</div>
+    </div>
+  </div>
+
+</div>
+</body></html>`;
+        }
+
+        // 打开美化预览
+        let _currentThemeTool = null;
+        function openThemeRender(tool) {
+            _currentThemeTool = tool;
+            document.getElementById('theme-render-title').innerText = tool.name;
+            document.getElementById('theme-render-frame').srcdoc = buildPreviewHtml(tool.cssContent);
+            openModal('theme-render-modal');
+        }
+        function switchThemeToSource() {
+            if (!_currentThemeTool) return;
+            document.getElementById('theme-source-title').innerText = _currentThemeTool.name + ' — 源代码';
+            document.getElementById('theme-source-code').textContent = _currentThemeTool.cssContent;
+            const btn = document.getElementById('theme-source-copy-btn');
+            btn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> 复制源代码';
+            btn.className = 'btn';
+            document.getElementById('theme-render-modal').style.display = 'none';
+            document.getElementById('theme-source-modal').style.display = 'flex';
+        }
+        function switchThemeToRender() {
+            document.getElementById('theme-source-modal').style.display = 'none';
+            document.getElementById('theme-render-modal').style.display = 'flex';
+        }
+        function copyThemeSource() {
+            if (!_currentThemeTool) return;
+            navigator.clipboard.writeText(_currentThemeTool.cssContent).then(() => {
+                const btn = document.getElementById('theme-source-copy-btn');
+                btn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> 已复制！';
+                btn.className = 'btn btn-secondary';
+                setTimeout(() => {
+                    btn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> 复制源代码';
+                    btn.className = 'btn';
+                }, 2000);
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = _currentThemeTool.cssContent;
+                ta.style.cssText = 'position:fixed;opacity:0;';
+                document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+                showToast('已复制到剪贴板');
+            });
+        }
+
+        function renderThemeCards() {
+            renderBreadcrumb(themesState.tree, 'themes-breadcrumb', (action) => {
+                if (action === 'delete') deleteFolderNode(themesState.tree.currentId, themesState.tree, renderThemeCards);
+                else renderThemeCards();
+            });
+            const container = document.getElementById('theme-card-container');
+            container.style.gridTemplateColumns = 'repeat(' + themesCols + ',1fr)';
+            const curId = themesState.tree.currentId;
+            const subFolders = themesState.tree.children(curId);
+            const visible = themesState.items.filter(t => t.folderId === curId);
+
+            if (subFolders.length === 0 && visible.length === 0) {
+                container.style.gridTemplateColumns = '';
+                container.innerHTML = '<p style="text-align:center;width:100%;color:var(--text-muted);padding:40px 20px;grid-column:1/-1;">当前文件夹为空，点击「导入」或「新建文件夹」开始</p>';
+                return;
+            }
+            container.innerHTML = '';
+            subFolders.forEach(folder => {
+                const card = document.createElement('div');
+                card.className = 'folder-card';
+                const delBtn = document.createElement('button');
+                delBtn.className = 'folder-card-del'; delBtn.innerHTML = '✕';
+                delBtn.onclick = (e) => { e.stopPropagation(); deleteFolderNode(folder.id, themesState.tree, renderThemeCards); };
+                const icon = document.createElement('div'); icon.className = 'folder-icon'; icon.innerHTML = '🎨';
+                const name = document.createElement('div'); name.className = 'card-name'; name.textContent = folder.name;
+                card.appendChild(delBtn); card.appendChild(icon); card.appendChild(name);
+                card.onclick = () => { themesState.tree.currentId = folder.id; renderThemeCards(); };
+                container.appendChild(card);
+            });
+            visible.forEach(tool => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.cssText = 'padding:10px;text-align:center;display:flex;flex-direction:column;align-items:center;overflow:hidden;position:relative;cursor:pointer;user-select:none;-webkit-user-select:none;';
+                const cb = document.createElement('input');
+                cb.type = 'checkbox'; cb.className = 'card-checkbox theme-cb'; cb.dataset.id = tool.id;
+                cb.style.cssText = 'position:absolute;top:8px;left:8px;width:22px;height:22px;cursor:pointer;z-index:10;accent-color:var(--accent-blue);';
+                cb.onclick = e => e.stopPropagation();
+                const avatar = document.createElement('div');
+                avatar.className = 'text-avatar';
+                avatar.style.cssText = 'width:100%;aspect-ratio:1/1;border-radius:10px;font-size:28px;background:rgba(255,255,255,0.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.9);box-shadow:0 4px 16px rgba(31,38,135,0.06);';
+                avatar.innerText = '🎨';
+                const nameEl = document.createElement('div');
+                nameEl.className = 'card-name'; nameEl.innerText = tool.name;
+                card.appendChild(cb); card.appendChild(avatar); card.appendChild(nameEl);
+                let pressTimer = null, moved = false;
+                const startPress = () => { moved = false; pressTimer = setTimeout(() => { if (!moved) openThemeRender(tool); }, 500); };
+                const cancelPress = () => { clearTimeout(pressTimer); pressTimer = null; };
+                const onMove = () => { moved = true; cancelPress(); };
+                card.addEventListener('touchstart', startPress, { passive: true });
+                card.addEventListener('touchend', cancelPress);
+                card.addEventListener('touchmove', onMove, { passive: true });
+                card.addEventListener('mousedown', startPress);
+                card.addEventListener('mouseup', cancelPress);
+                card.addEventListener('mouseleave', cancelPress);
+                card.onclick = (e) => { if (e.target === cb) return; cb.checked = !cb.checked; };
+                container.appendChild(card);
+            });
+        }
+
+        // ============================================================
+        // ★★★ 世界书逻辑（复刻角色卡）★★★
+        // ============================================================
+        let loreViewMode = 'grid-view';
+        function switchLoreView(v) {
+            loreViewMode = v;
+            document.getElementById('lore-container').className = v;
+        }
+        function loreMkdir() { openMkdirModal(loreState.tree, () => renderLoreCards()); }
+        function loreToggleSelectAll() {
+            const cbs = document.querySelectorAll('#lore-container .card-checkbox');
+            const all = Array.from(cbs).every(c => c.checked);
+            cbs.forEach(c => c.checked = !all);
+        }
+        function loreOpenMoveModal() {
+            const checked = document.querySelectorAll('#lore-container .card-checkbox:checked');
+            if (!checked.length) return showToast('请先勾选条目！', 'error');
+            openMoveTreeModal({
+                tree: loreState.tree,
+                getSelectedItems: () => Array.from(checked).map(cb => loreState.cards.find(c => c.id === cb.dataset.id)).filter(Boolean),
+                doMove: (targetId) => {
+                    checked.forEach(cb => {
+                        const c = loreState.cards.find(x => x.id === cb.dataset.id);
+                        if (c) c.folderId = targetId;
+                    });
+                    renderLoreCards();
+                    showToast('已移动 ' + checked.length + ' 个条目');
+                }
+            });
+        }
+        function loreDeleteSelected() {
+            const checked = document.querySelectorAll('#lore-container .card-checkbox:checked');
+            if (!checked.length) return showToast('请先勾选条目！', 'error');
+            if (confirm('确定删除选中的 ' + checked.length + ' 个条目？')) {
+                const ids = Array.from(checked).map(cb => cb.dataset.id);
+                loreState.cards = loreState.cards.filter(c => !ids.includes(c.id));
+                renderLoreCards();
+                showToast('已删除 ' + ids.length + ' 个', 'error');
+            }
+        }
+
+        // 世界书导入（支持 json/png/txt/docx/doc/pdf）
+        document.getElementById('lorebook-upload').addEventListener('change', async function(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+            openModal('loading-modal');
+            for (const file of files) {
+                const name = file.name.replace(/\.\w+$/, '') || file.name;
+                const ext = file.name.split('.').pop().toLowerCase();
+                try {
+                    if (ext === 'json') {
+                        const text = await file.text();
+                        try {
+                            const jsonData = JSON.parse(text);
+                            let displayName = jsonData.name || name;
+                            let description = '';
+
+                            if (jsonData.entries) {
+                                const entries = Array.isArray(jsonData.entries)
+                                    ? jsonData.entries
+                                    : Object.values(jsonData.entries);
+                                description = entries.map(e => {
+                                    const title = e.comment || (Array.isArray(e.key) ? e.key.join(', ') : e.key) || '';
+                                    return (title ? '【' + title + '】\n' : '') + (e.content || '');
+                                }).filter(s => s.trim()).join('\n\n──────\n\n');
+                            } else if (jsonData.items && Array.isArray(jsonData.items)) {
+                                description = jsonData.items.map(item => {
+                                    const enabled = item.enabled === false ? ' [已禁用]' : '';
+                                    return '【' + (item.name || '无标题') + enabled + '】\n' + (item.content || '（无内容）');
+                                }).join('\n\n──────\n\n');
+                            } else if (jsonData.description || (jsonData.data && jsonData.data.description)) {
+                                description = jsonData.description || jsonData.data.description;
+                            } else {
+                                description = JSON.stringify(jsonData, null, 2);
+                            }
+
+                            addLoreData({ name: displayName, description }, null);
+                            showToast('已导入: ' + displayName);
+                        } catch {
+                            addLoreData({ name, description: text }, null);
+                            showToast('已导入(原文): ' + name);
+                        }
+
+                    } else if (ext === 'png') {
+                        const buf = await file.arrayBuffer();
+                        const jsonData = parsePngChunk(buf);
+                        if (jsonData) { addLoreData(jsonData, URL.createObjectURL(file)); showToast('已导入: ' + name); }
+                        else showToast('此PNG不含角色数据: ' + name, 'error');
+
+                    } else if (ext === 'txt') {
+                        const text = await file.text();
+                        addLoreData({ name, description: text.trim() }, null);
+                        showToast('已导入: ' + name);
+
+                    } else if (ext === 'docx' || ext === 'doc') {
+                        const buf = await file.arrayBuffer();
+                        const result = await mammoth.extractRawText({ arrayBuffer: buf });
+                        addLoreData({ name, description: result.value.trim() }, null);
+                        showToast('已导入: ' + name);
+
+                    } else if (ext === 'pdf') {
+                        const description = await extractPdfText(file);
+                        addLoreData({ name, description }, null);
+                        showToast('已导入: ' + name);
+
+                    } else {
+                        const text = await file.text().catch(() => '');
+                        addLoreData({ name, description: text.trim() }, null);
+                        showToast('已导入: ' + name);
+                    }
+                } catch(err) {
+                    showToast('导入失败: ' + file.name, 'error');
+                    console.error(err);
+                }
+            }
+            event.target.value = '';
+            renderLoreCards();
+            closeModal('loading-modal');
+            showToast('已导入，当前共 ' + loreState.cards.length + ' 个条目');
+        });
+
+        // PDF 文字提取（按需加载 pdf.js）
+        async function extractPdfText(file) {
+            // 动态加载 pdf.js
+            if (!window.pdfjsLib) {
+                await new Promise((resolve, reject) => {
+                    const s = document.createElement('script');
+                    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                    s.onload = resolve; s.onerror = reject;
+                    document.head.appendChild(s);
+                });
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
+            try {
+                const buf = await file.arrayBuffer();
+                const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+                let fullText = '';
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    const pageText = content.items.map(item => item.str).join(' ');
+                    fullText += pageText + (i < pdf.numPages ? '\n\n' : '');
+                }
+                return fullText.trim() || '[PDF内容为空或无法提取文字]';
+            } catch(e) {
+                console.error('PDF提取失败:', e);
+                return '[PDF解析失败，可能是扫描件或加密文件]';
+            }
+        }
+
+        function addLoreData(jsonData, imageUrl) {
+            const name = jsonData.name || (jsonData.data && jsonData.data.name) || '未知条目';
+            const desc = jsonData.description || (jsonData.data && jsonData.data.description) || '';
+            loreState.cards.push({
+                id: 'lore_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                name, initial: name.charAt(0).toUpperCase(),
+                description: desc,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                folderId: loreState.tree.currentId,
+                imageUrl
+            });
+        }
+
+        function openLoreModal(card) {
+            document.getElementById('lore-modal-title').innerText = card.name;
+            document.getElementById('lore-modal-body').innerText = card.description;
+            const btn = document.getElementById('lore-copy-btn');
+            btn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> 复制世界书';
+            btn.className = 'btn btn-secondary';
+            openModal('lore-modal');
+        }
+        function copyLoreContent() {
+            const text = document.getElementById('lore-modal-body').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('lore-copy-btn');
+                btn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> 已复制！';
+                btn.className = 'btn';
+                setTimeout(() => {
+                    btn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> 复制世界书';
+                    btn.className = 'btn btn-secondary';
+                }, 2000);
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;';
+                document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+                showToast('已复制到剪贴板');
+            });
+        }
+
+        function renderLoreCards() {
+            renderBreadcrumb(loreState.tree, 'lore-breadcrumb', (action) => {
+                if (action === 'delete') deleteFolderNode(loreState.tree.currentId, loreState.tree, renderLoreCards);
+                else renderLoreCards();
+            });
+            const container = document.getElementById('lore-container');
+            container.className = loreViewMode;
+            container.innerHTML = '';
+            const curId = loreState.tree.currentId;
+            const subFolders = loreState.tree.children(curId);
+            subFolders.forEach(folder => {
+                const card = document.createElement('div');
+                card.className = 'folder-card';
+                const delBtn = document.createElement('button');
+                delBtn.className = 'folder-card-del'; delBtn.innerHTML = '✕';
+                delBtn.onclick = (e) => { e.stopPropagation(); deleteFolderNode(folder.id, loreState.tree, renderLoreCards); };
+                const icon = document.createElement('div'); icon.className = 'folder-icon'; icon.innerHTML = '📖';
+                const name = document.createElement('div'); name.className = 'card-name'; name.textContent = folder.name;
+                card.appendChild(delBtn); card.appendChild(icon); card.appendChild(name);
+                card.onclick = () => { loreState.tree.currentId = folder.id; renderLoreCards(); };
+                container.appendChild(card);
+            });
+            const visible = loreState.cards.filter(c => c.folderId === curId);
+            if (subFolders.length === 0 && visible.length === 0) {
+                container.innerHTML = '<p style="text-align:center;width:100%;color:var(--text-muted);padding:40px 20px;">当前文件夹为空，点击「导入世界书」或「新建文件夹」开始</p>';
+                return;
+            }
+            visible.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.onclick = () => openLoreModal(card);
+                const avatarHtml = card.imageUrl
+                    ? `<img src="${card.imageUrl}" class="image-avatar" alt="">`
+                    : `<div class="text-avatar" style="color:${card.color}">${card.initial}</div>`;
+                cardEl.innerHTML = `
+                    <input type="checkbox" class="card-checkbox" data-id="${card.id}" onclick="event.stopPropagation()">
+                    ${avatarHtml}
+                    <div class="card-info"><h4 class="card-name">${card.name}</h4></div>`;
+                container.appendChild(cardEl);
+            });
+        }
+
+        // ============================================================
+        // ★ 旧版 renderCards 覆盖（新版已在 appState 区块定义）
+        // ============================================================
+
+        window.onload = function() { initApp(); setupPWA(); renderHtmlCards(); renderThemeCards(); renderLoreCards(); };
+    </script>
+</body>
+</html>
